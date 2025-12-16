@@ -1,0 +1,42 @@
+{
+
+
+    "nivel1":[
+        ["bloque16.png", 3.141592653589793, "bloque1.png", 4.71238898038469]
+    ],
+
+    "nivel2":[
+        ["bloque8.png", 4.71238898038469, "bloque2.png", 1.5707963267948966]
+    ],
+
+    "nivel3":[
+        ["bloque15.png", 0, "bloque4.png", 0]
+    ],
+
+    "nivel4":[
+        ["bloque18.png", 4.71238898038469, "bloque10.png", 4.71238898038469]
+    ],
+
+    "nivel5":[
+        ["bloque16.png", 0, "bloque17.png", 0]
+    ],
+
+    "nivel6":[
+        ["bloque1.png", 4.71238898038469, "bloque6.png", 3.141592653589793]
+    ],
+
+    "nivel7":[
+        ["bloque13.png", 4.71238898038469, "bloque8.png", 1.5707963267948966]
+    ],
+
+    "nivel8":[
+        ["bloque7.png", 1.5707963267948966, "bloque18.png", 3.141592653589793, "bloque9.png", 0]
+    ],
+    "nivel9":[
+        ["bloque4.png", 0, "bloque3.png", 0]
+    ]
+
+    
+
+
+}
