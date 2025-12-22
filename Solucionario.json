@@ -1,42 +1,310 @@
 {
-
-
-    "nivel1":[
-        ["bloque16.png", 3.141592653589793, "bloque1.png", 4.71238898038469]
+  "Starter": {
+    "nivel1": [
+      ["bloque4.png", 0, "bloque3.png", 0]
     ],
-
-    "nivel2":[
-        ["bloque8.png", 4.71238898038469, "bloque2.png", 1.5707963267948966]
+    "nivel2": [
+      ["bloque6.png", 3.141592653589793, "bloque15.png", 0]
     ],
-
-    "nivel3":[
-        ["bloque15.png", 0, "bloque4.png", 0]
+    "nivel3": [
+      ["bloque18.png", 0, "bloque10.png", 3.141592653589793]
     ],
-
-    "nivel4":[
-        ["bloque18.png", 4.71238898038469, "bloque10.png", 4.71238898038469]
+    "nivel4": [
+      ["bloque8.png", 0, "bloque16.png", 4.71238898038469]
     ],
-
-    "nivel5":[
-        ["bloque16.png", 0, "bloque17.png", 0]
+    "nivel5": [
+      ["bloque4.png", 0, "bloque1.png", 0]
     ],
-
-    "nivel6":[
-        ["bloque1.png", 4.71238898038469, "bloque6.png", 3.141592653589793]
+    "nivel6": [
+      ["bloque18.png", 0, "bloque6.png", 0]
     ],
-
-    "nivel7":[
-        ["bloque13.png", 4.71238898038469, "bloque8.png", 1.5707963267948966]
+    "nivel7": [
+      ["bloque13.png", 3.141592653589793, "bloque7.png", 0]
     ],
-
-    "nivel8":[
-        ["bloque7.png", 1.5707963267948966, "bloque18.png", 3.141592653589793, "bloque9.png", 0]
+    "nivel8": [
+      ["bloque17.png", 0, "bloque2.png", 0]
     ],
-    "nivel9":[
-        ["bloque4.png", 0, "bloque3.png", 0]
+    "nivel9": [
+      ["bloque9.png", 1.5707963267948966, "bloque11.png", 3.141592653589793]
+    ],
+    "nivel10": [
+      ["bloque1.png", 4.71238898038469, "bloque3.png", 0]
+    ],
+    "nivel11": [
+      ["bloque16.png", 1.5707963267948966, "bloque6.png", 1.5707963267948966]
+    ],
+    "nivel12": [
+      ["bloque1.png", 0, "bloque13.png", 1.5707963267948966]
+    ],
+    "nivel13": [
+      ["bloque9.png", 4.71238898038469, "bloque7.png", 4.71238898038469]
+    ],
+    "nivel14": [
+      ["bloque8.png", 3.141592653589793, "bloque10.png", 3.141592653589793]
+    ],
+    "nivel15": [
+      ["bloque12.png", 3.141592653589793, "bloque9.png", 3.141592653589793]
+    ],
+    "nivel16": [
+      ["bloque4.png", 0, "bloque13.png", 4.71238898038469]
+    ],
+    "nivel17": [
+      ["bloque15.png", 0, "bloque12.png", 3.141592653589793]
+    ],
+    "nivel18": [
+      ["bloque6.png", 0, "bloque8.png", 3.141592653589793]
+    ],
+    "nivel19": [
+      ["bloque17.png", 4.71238898038469, "bloque7.png", 1.5707963267948966]
+    ],
+    "nivel20": [
+      ["bloque15.png", 0, "bloque3.png", 0, "bloque12.png", 0]
+    ],
+    "nivel21": [
+      ["bloque18.png", 0, "bloque11.png", 0, "bloque17.png", 0]
+    ],
+    "nivel22": [
+      ["bloque6.png", 3.141592653589793, "bloque3.png", 0, "bloque16.png", 3.141592653589793]
+    ],
+    "nivel23": [
+      ["bloque8.png", 1.5707963267948966, "bloque10.png", 4.71238898038469, "bloque4.png", 0]
+    ],
+    "nivel24": [
+      ["bloque11.png", 0, "bloque9.png", 0, "bloque18.png", 4.71238898038469]
+    ],
+    "nivel25": [
+      ["bloque3.png", 0, "bloque7.png", 4.71238898038469, "bloque13.png", 0]
     ]
-
-    
-
-
+  },
+  "Junior": {
+    "nivel26": [
+      ["bloque11.png", 0, "bloque2.png", 3.141592653589793]
+    ],
+    "nivel27": [
+      ["bloque15.png", 0, "bloque5.png", 0]
+    ],
+    "nivel28": [
+      ["bloque7.png", 4.71238898038469, "bloque6.png", 0]
+    ],
+    "nivel29": [
+      ["bloque4.png", 0, "bloque3.png", 0, "bloque1.png", 4.71238898038469]
+    ],
+    "nivel30": [
+      ["bloque9.png", 0, "bloque7.png", 1.5707963267948966, "bloque10.png", 0]
+    ],
+    "nivel31": [
+      ["bloque8.png", 0, "bloque10.png", 4.71238898038469, "bloque14.png", 4.71238898038469]
+    ],
+    "nivel32": [
+      ["bloque12.png", 0, "bloque6.png", 0, "bloque18.png", 4.71238898038469]
+    ],
+    "nivel33": [
+      ["bloque6.png", 4.71238898038469, "bloque16.png", 4.71238898038469, "bloque17.png", 4.71238898038469]
+    ],
+    "nivel34": [
+      ["bloque1.png", 0, "bloque14.png", 3.141592653589793]
+    ],
+    "nivel35": [
+      ["bloque3.png", 0, "bloque18.png", 0, "bloque9.png", 4.71238898038469]
+    ],
+    "nivel36": [
+      ["bloque10.png", 4.71238898038469, "bloque11.png", 4.71238898038469, "bloque16.png", 4.71238898038469]
+    ],
+    "nivel37": [
+      ["bloque15.png", 3.141592653589793, "bloque8.png", 3.141592653589793, "bloque17.png", 0]
+    ],
+    "nivel38": [
+      ["bloque4.png", 0, "bloque14.png", 3.141592653589793, "bloque16.png", 1.5707963267948966]
+    ],
+    "nivel39": [
+      ["bloque8.png", 0, "bloque1.png", 0, "bloque13.png", 0]
+    ],
+    "nivel40": [
+      ["bloque7.png", 1.5707963267948966, "bloque15.png", 3.141592653589793, "bloque17.png", 4.71238898038469]
+    ],
+    "nivel41": [
+      ["bloque4.png", 0, "bloque7.png", 0, "bloque18.png", 0]
+    ],
+    "nivel42": [
+      ["bloque2.png", 3.141592653589793, "bloque1.png", 0, "bloque11.png", 0]
+    ],
+    "nivel43": [
+      ["bloque15.png", 3.141592653589793, "bloque9.png", 0, "bloque17.png", 0]
+    ],
+    "nivel44": [
+      ["bloque4.png", 0, "bloque13.png", 3.141592653589793, "bloque14.png", 1.5707963267948966]
+    ],
+    "nivel45": [
+      ["bloque2.png", 3.141592653589793, "bloque14.png", 0, "bloque11.png", 4.71238898038469]
+    ],
+    "nivel46": [
+      ["bloque16.png", 4.71238898038469, "bloque11.png", 4.71238898038469, "bloque5.png", 3.141592653589793]
+    ],
+    "nivel47": [
+      ["bloque1.png", 1.5707963267948966, "bloque12.png", 3.141592653589793, "bloque17.png", 0]
+    ],
+    "nivel48": [
+      ["bloque6.png", 0, "bloque14.png", 0, "bloque7.png", 0]
+    ],
+    "nivel49": [
+      ["bloque8.png", 4.71238898038469, "bloque15.png", 3.141592653589793, "bloque13.png", 4.71238898038469]
+    ],
+    "nivel50": [
+      ["bloque2.png", 3.141592653589793, "bloque6.png", 4.71238898038469, "bloque11.png", 0]
+    ]
+  },
+  "Expert": {
+    "nivel51": [
+      ["bloque1.png", 1.5707963267948966, "bloque18.png", 1.5707963267948966, "bloque7.png", 4.71238898038469, "bloque17.png", 0]
+    ],
+    "nivel52": [
+      ["bloque3.png", 0, "bloque16.png", 0, "bloque5.png", 3.141592653589793, "bloque11.png", 3.141592653589793]
+    ],
+    "nivel53": [
+      ["bloque2.png", 1.5707963267948966, "bloque8.png", 3.141592653589793, "bloque7.png", 4.71238898038469, "bloque10.png", 0]
+    ],
+    "nivel54": [
+      ["bloque1.png", 1.5707963267948966, "bloque9.png", 0, "bloque17.png", 0, "bloque6.png", 0]
+    ],
+    "nivel55": [
+      ["bloque15.png", 0, "bloque9.png", 1.5707963267948966, "bloque7.png", 1.5707963267948966, "bloque17.png", 3.141592653589793]
+    ],
+    "nivel56": [
+      ["bloque15.png", 3.141592653589793, "bloque12.png", 0, "bloque14.png", 1.5707963267948966, "bloque4.png", 0]
+    ],
+    "nivel57": [
+      ["bloque15.png", 4.71238898038469, "bloque7.png", 0, "bloque17.png", 1.5707963267948966, "bloque10.png", 1.5707963267948966]
+    ],
+    "nivel58": [
+      ["bloque4.png", 0, "bloque11.png", 4.71238898038469, "bloque8.png", 1.5707963267948966, "bloque18.png", 1.5707963267948966]
+    ],
+    "nivel59": [
+      ["bloque6.png", 4.71238898038469, "bloque16.png", 0, "bloque7.png", 4.71238898038469, "bloque10.png", 0]
+    ],
+    "nivel60": [
+      ["bloque9.png", 0, "bloque1.png", 0, "bloque3.png", 0, "bloque12.png", 1.5707963267948966]
+    ],
+    "nivel61": [
+      ["bloque18.png", 1.5707963267948966, "bloque11.png", 3.141592653589793, "bloque13.png", 1.5707963267948966, "bloque9.png", 1.5707963267948966]
+    ],
+    "nivel62": [
+      ["bloque4.png", 0, "bloque1.png", 3.141592653589793, "bloque18.png", 4.71238898038469, "bloque5.png", 1.5707963267948966]
+    ],
+    "nivel63": [
+      ["bloque8.png", 1.5707963267948966, "bloque1.png", 3.141592653589793, "bloque10.png", 4.71238898038469, "bloque13.png", 3.141592653589793]
+    ],
+    "nivel64": [
+      ["bloque7.png", 3.141592653589793, "bloque14.png", 3.141592653589793, "bloque15.png", 3.141592653589793, "bloque8.png", 0]
+    ],
+    "nivel65": [
+      ["bloque13.png", 3.141592653589793, "bloque8.png", 4.71238898038469, "bloque5.png", 3.141592653589793, "bloque11.png", 0]
+    ],
+    "nivel66": [
+      ["bloque3.png", 0, "bloque6.png", 4.71238898038469, "bloque14.png", 3.141592653589793, "bloque9.png", 4.71238898038469]
+    ],
+    "nivel67": [
+      ["bloque15.png", 1.5707963267948966, "bloque14.png", 3.141592653589793, "bloque17.png", 1.5707963267948966, "bloque7.png", 1.5707963267948966]
+    ],
+    "nivel68": [
+      ["bloque3.png", 0, "bloque1.png", 1.5707963267948966, "bloque5.png", 1.5707963267948966, "bloque9.png", 4.71238898038469]
+    ],
+    "nivel69": [
+      ["bloque2.png", 1.5707963267948966, "bloque10.png", 4.71238898038469, "bloque11.png", 4.71238898038469, "bloque16.png", 4.71238898038469]
+    ],
+    "nivel70": [
+      ["bloque15.png", 3.141592653589793, "bloque1.png", 1.5707963267948966, "bloque12.png", 1.5707963267948966, "bloque17.png", 1.5707963267948966]
+    ],
+    "nivel71": [
+      ["bloque2.png", 1.5707963267948966, "bloque1.png", 3.141592653589793, "bloque14.png", 1.5707963267948966]
+    ],
+    "nivel72": [
+      ["bloque12.png", 1.5707963267948966, "bloque13.png", 4.71238898038469, "bloque5.png", 4.71238898038469]
+    ],
+    "nivel73": [
+      ["bloque6.png", 0, "bloque2.png", 0, "bloque7.png", 0, "bloque11.png", 0]
+    ],
+    "nivel74": [
+      ["bloque8.png", 4.71238898038469, "bloque4.png", 0, "bloque13.png", 4.71238898038469, "bloque18.png", 3.141592653589793]
+    ],
+    "nivel75": [
+      ["bloque3.png", 0, "bloque14.png", 3.141592653589793, "bloque17.png", 4.71238898038469, "bloque5.png", 3.141592653589793]
+    ]
+  },
+  "Master": {
+    "nivel76": [
+      ["bloque4.png", 0, "bloque10.png", 0, "bloque3.png", 0, "bloque9.png", 4.71238898038469, "bloque7.png", 3.141592653589793]
+    ],
+    "nivel77": [
+      ["bloque8.png", 0, "bloque1.png", 1.5707963267948966, "bloque13.png", 4.71238898038469, "bloque5.png", 4.71238898038469, "bloque11.png", 1.5707963267948966]
+    ],
+    "nivel78": [
+      ["bloque6.png", 4.71238898038469, "bloque10.png", 1.5707963267948966, "bloque14.png", 4.71238898038469, "bloque7.png", 3.141592653589793, "bloque16.png", 1.5707963267948966]
+    ],
+    "nivel79": [
+      ["bloque4.png", 0, "bloque14.png", 3.141592653589793, "bloque10.png", 3.141592653589793, "bloque13.png", 0, "bloque18.png", 1.5707963267948966]
+    ],
+    "nivel80": [
+      ["bloque4.png", 0, "bloque12.png", 3.141592653589793, "bloque1.png", 1.5707963267948966, "bloque17.png", 3.141592653589793, "bloque6.png", 0]
+    ],
+     "nivel81": [
+      ["bloque1.png", 0, "bloque10.png", 1.5707963267948966, "bloque9.png", 4.71238898038469, "bloque7.png", 3.141592653589793, "bloque14.png", 0]
+    ],
+    "nivel82": [
+      ["bloque2.png", 0, "bloque4.png", 0, "bloque13.png", 3.141592653589793, "bloque11.png", 3.141592653589793, "bloque18.png", 1.5707963267948966]
+    ],
+    "nivel83": [
+      ["bloque8.png", 3.141592653589793, "bloque1.png", 0, "bloque7.png", 0, "bloque13.png", 0, "bloque4.png", 0]
+    ],
+    "nivel84": [
+      ["bloque7.png", 4.71238898038469, "bloque3.png", 0, "bloque6.png", 4.71238898038469, "bloque10.png", 0, "bloque8.png", 1.5707963267948966]
+    ],
+    "nivel85": [
+      ["bloque8.png", 0, "bloque14.png", 1.5707963267948966, "bloque9.png", 0, "bloque13.png", 3.141592653589793]
+    ], 
+    "nivel86": [
+      ["bloque1.png", 4.71238898038469, "bloque6.png", 4.71238898038469, "bloque10.png", 3.141592653589793, "bloque14.png", 3.141592653589793, "bloque13.png", 0]
+    ],
+    "nivel87": [
+      ["bloque3.png", 0, "bloque9.png", 0, "bloque7.png", 0, "bloque6.png", 0, "bloque17.png", 4.71238898038469]
+    ],
+    "nivel88": [
+      ["bloque1.png", 4.71238898038469, "bloque16.png", 1.5707963267948966, "bloque10.png", 0, "bloque12.png", 3.141592653589793, "bloque5.png", 3.141592653589793]
+    ],
+    "nivel89": [
+      ["bloque16.png", 1.5707963267948966, "bloque7.png", 1.5707963267948966, "bloque10.png", 1.5707963267948966, "bloque13.png", 0, "bloque5.png", 1.5707963267948966]
+    ],
+    "nivel90": [
+      ["bloque2.png", 1.5707963267948966, "bloque11.png", 3.141592653589793, "bloque14.png", 4.71238898038469, "bloque13.png", 1.5707963267948966, "bloque4.png", 0]
+    ],
+    "nivel91": [
+      ["bloque1.png", 0, "bloque14.png", 3.141592653589793, "bloque15.png", 0, "bloque5.png", 0, "bloque17.png", 3.141592653589793]
+    ],
+    "nivel92": [
+      ["bloque9.png", 0, "bloque8.png", 1.5707963267948966, "bloque3.png", 0, "bloque13.png", 0, "bloque5.png", 0]
+    ],
+    "nivel93": [
+      ["bloque1.png", 4.71238898038469, "bloque6.png", 4.71238898038469, "bloque14.png", 4.71238898038469, "bloque16.png", 1.5707963267948966, "bloque8.png", 1.5707963267948966]
+    ],
+    "nivel94": [
+      ["bloque2.png", 4.71238898038469, "bloque13.png", 0, "bloque14.png", 0, "bloque7.png", 3.141592653589793, "bloque5.png", 4.71238898038469]
+    ],
+    "nivel95": [
+      ["bloque8.png", 1.5707963267948966, "bloque14.png", 1.5707963267948966, "bloque13.png", 4.71238898038469, "bloque5.png", 3.141592653589793]
+    ],
+    "nivel96": [
+      ["bloque9.png", 4.71238898038469, "bloque15.png", 4.71238898038469, "bloque3.png", 0, "bloque1.png", 3.141592653589793, "bloque14.png", 1.5707963267948966]
+    ],
+    "nivel97": [
+      ["bloque1.png", 1.5707963267948966, "bloque8.png", 0, "bloque12.png", 1.5707963267948966, "bloque13.png", 1.5707963267948966]
+    ],
+    "nivel98": [
+      ["bloque4.png", 0, "bloque14.png", 0, "bloque7.png", 4.71238898038469, "bloque18.png", 0, "bloque11.png", 1.5707963267948966]
+    ],
+    "nivel99": [
+      ["bloque13.png", 0, "bloque6.png", 0, "bloque16.png", 3.141592653589793, "bloque8.png", 3.141592653589793, "bloque7.png", 3.141592653589793]
+    ],
+    "nivel100": [
+      ["bloque2.png", 4.71238898038469, "bloque9.png", 0, "bloque17.png", 1.5707963267948966, "bloque11.png", 1.5707963267948966, "bloque5.png", 0]
+    ]
+  }
 }
