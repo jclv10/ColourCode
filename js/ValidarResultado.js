@@ -75,7 +75,8 @@ export const ValidarResultado = {
         }
         cls._validateButton.visible = true;
         cls._validateButton.x = Math.round(app.screen.width / 2);
-        cls._validateButton.y = Math.round(app.screen.height * 5 / 6);
+        // Place Validate button near bottom
+        cls._validateButton.y = Math.round(app.screen.height * 12 / 14);
       }catch(e){}
     }else{
       try{ if(cls._validateLabel) cls._validateLabel.visible = false; }catch(e){}

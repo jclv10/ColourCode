@@ -37,6 +37,19 @@ import { Nivel } from './Nivel.js';
         if(!app.stage.sortableChildren) app.stage.sortableChildren = true;
         // Keep background sized on resize
         //window.addEventListener('resize', fitBg);
+
+        // Expose wallpaper reference and a tint helper by difficulty page
+        try{
+            Figura.wallpaperBgRef = bg;
+            const tintMap = [0x2ecc71, 0xe67e22, 0xe74c3c, 0x9b59b6]; // green, orange, red, purple
+            Figura.setWallpaperTint = (pageIdx) => {
+                try{
+                    const idx = Math.max(0, Math.min(tintMap.length-1, pageIdx|0));
+                    const color = tintMap[idx] ?? 0xFFFFFF;
+                    if(Figura.wallpaperBgRef) Figura.wallpaperBgRef.tint = color;
+                }catch(e){}
+            };
+        }catch(e){}
     }catch(e){ console.error('Failed to load wallpaper background', e); }
 
 
@@ -59,9 +72,45 @@ import { Nivel } from './Nivel.js';
     try{
         const res = await fetch('./Solucionario.json');
         const json = await res.json();
-        const keys = Object.keys(json).filter(k=>/^nivel\d+$/i.test(k)).sort((a,b)=> parseInt(a.replace(/\D/g,'')) - parseInt(b.replace(/\D/g,'')));
-        const levelSolutions = keys.map(k => { const entry = json[k]; const arr = Array.isArray(entry) ? entry[0] : []; return Array.isArray(arr) ? arr.slice() : []; });
-        SeleccionarNivel.setSolutions(levelSolutions);
+
+        // Detect difficulties shape or flat list
+        const difficultyNames = ['Starter', 'Junior', 'Expert', 'Master'];
+        const hasDifficulties = difficultyNames.some(name => json && Object.prototype.hasOwnProperty.call(json, name));
+        let difficulties = [];
+
+        if(hasDifficulties){
+            // Build 4 pages (25 levels each) from difficulty objects
+            difficulties = difficultyNames.map((name, idx) => {
+                const obj = json[name] || {};
+                const startLevel = idx * 25 + 1; // 1..25, 26..50, 51..75, 76..100
+                const page = [];
+                for(let i=0;i<25;i++){
+                    const globalLevel = startLevel + i;
+                    const key = `nivel${globalLevel}`;
+                    const entry = obj[key];
+                    let arr = [];
+                    if(Array.isArray(entry)){
+                        const maybe = entry[0];
+                        arr = Array.isArray(maybe) ? maybe.slice() : [];
+                    }
+                    page.push(arr);
+                }
+                return page;
+            });
+        }else{
+            // Fallback: flat list of nivelN entries
+            const keys = Object.keys(json)
+              .filter(k=>/^nivel\d+$/i.test(k))
+              .sort((a,b)=> parseInt(a.replace(/\D/g,'')) - parseInt(b.replace(/\D/g,'')));
+            const flat = keys.map(k => {
+                const entry = json[k];
+                const arr = Array.isArray(entry) ? entry[0] : [];
+                return Array.isArray(arr) ? arr.slice() : [];
+            });
+            for(let i=0;i<flat.length;i+=25){ difficulties.push(flat.slice(i, i+25)); }
+        }
+
+        SeleccionarNivel.setSolutions(difficulties);
     }catch(e){ console.error('Failed to load Solucionario.json', e); }
 
     SeleccionarNivel.show();

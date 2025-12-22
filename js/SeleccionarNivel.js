@@ -11,9 +11,17 @@ export const SeleccionarNivel = {
     app.stage.addChild(this.selectorContainer);
     if(!app.stage.sortableChildren) app.stage.sortableChildren = true;
     this.completedLevels = new Set((() => { try{ return JSON.parse(localStorage.getItem('completedLevels') || '[]'); }catch{ return []; } })());
+    // Difficulty paging (0: Starter, 1: Junior, 2: Expert, 3: Master)
+    try{
+      const stored = parseInt(localStorage.getItem('currentDifficultyPage') || '0', 10);
+      this.currentPage = isNaN(stored) ? 0 : stored;
+    }catch{ this.currentPage = 0; }
+    this.arrowLeft = null;
+    this.arrowRight = null;
   },
 
-  setSolutions(levelSolutions){ this.levelSolutions = levelSolutions || []; },
+  // Accept difficulties as array of arrays: [Starter[], Junior[], Expert[], Master[]]
+  setSolutions(difficulties){ this.difficulties = Array.isArray(difficulties) ? difficulties : []; },
 
   saveCompleted(){ try{ localStorage.setItem('completedLevels', JSON.stringify(Array.from(this.completedLevels))); }catch(e){} },
 
@@ -28,9 +36,14 @@ export const SeleccionarNivel = {
     const container = this.selectorContainer;
     container.removeChildren();
     container.visible = true;
-    if(!this.levelSolutions || this.levelSolutions.length === 0) return;
+    const totalPages = Array.isArray(this.difficulties) ? this.difficulties.length : 0;
+    if(totalPages === 0) return;
+    this.currentPage = Math.max(0, Math.min(totalPages - 1, this.currentPage));
+    try{ localStorage.setItem('currentDifficultyPage', String(this.currentPage)); }catch(e){}
+    // Tint wallpaper by current difficulty page
+    try{ if(Figura && Figura.setWallpaperTint) Figura.setWallpaperTint(this.currentPage); }catch(e){}
 
-    const n = this.levelSolutions.length;
+    // Compute page area and layout
     const marginSide = Math.floor(64 * scaleFactor);
     const marginBottom = Math.floor(64 * scaleFactor);
     const marginTop = Math.floor(160 * scaleFactor);
@@ -40,25 +53,33 @@ export const SeleccionarNivel = {
     const areaH = Math.floor(usableH * 0.85);
     const areaX = Math.floor((app.screen.width - areaW) / 2);
     const areaY = Math.floor(marginTop + (usableH - areaH) / 2);
-    const cols = Math.min(4, Math.max(2, Math.ceil(Math.sqrt(n))));
-    const rows = Math.ceil(n / cols);
+    const pageLevels = this.difficulties[this.currentPage] || [];
+    // Force 5x5 grid layout
+    const cols = 5;
+    const rows = 5;
+    const pageCount = cols * rows; // always 25 cells
     const gap = Math.floor(18*scaleFactor);
     const cellW = Math.floor((areaW - (cols-1)*gap) / cols);
     const cellH = Math.floor((areaH - (rows-1)*gap) / rows);
 
-    for(let i=0;i<n;i++){
+    for(let i=0;i<pageCount;i++){
       const row = Math.floor(i / cols);
       const col = i % cols;
       const x = areaX + col * (cellW + gap);
       const y = areaY + row * (cellH + gap);
-      const idx = i + 1;
+      const idx = this.currentPage * 25 + i + 1; // global level number (1-based)
       const completed = this.completedLevels.has(idx);
+      const hasData = Array.isArray(pageLevels[i]) && pageLevels[i].length > 0;
       const btn = new Graphics();
-      const color = completed ? 0x2ecc71 : 0x3498db;
+      const color = completed ? 0x2ecc71 : (hasData ? 0x3498db : 0x7f8c8d);
       btn.beginFill(color).drawRoundedRect(0, 0, cellW, cellH, Math.floor(14*scaleFactor)).endFill();
       btn.x = x; btn.y = y;
-      btn.eventMode = 'static'; btn.cursor = 'pointer';
-      btn.on('pointertap', () => Nivel.loadLevel(idx, this));
+      if(hasData){
+        btn.eventMode = 'static'; btn.cursor = 'pointer';
+        btn.on('pointertap', () => Nivel.loadLevel(idx, this));
+      }else{
+        btn.eventMode = 'none'; btn.cursor = null;
+      }
 
       const txt = new Text(String(idx), new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(32*scaleFactor), fontWeight: 'bold', fill: 0xffffff }));
       txt.anchor.set(0.5); txt.x = x + cellW/2; txt.y = y + cellH/2;
@@ -68,6 +89,7 @@ export const SeleccionarNivel = {
     }
 
     this.addResetProgressButton();
+    this.addDifficultyArrows(areaX, areaY, areaW, areaH, totalPages);
   },
 
   hide(){ if(this.selectorContainer) this.selectorContainer.visible = false; },
@@ -88,6 +110,54 @@ export const SeleccionarNivel = {
     c.on('pointertap', () => this.showConfirmResetModal());
     container.addChild(c);
     this.resetBtn = c;
+  },
+
+  addDifficultyArrows(areaX, areaY, areaW, areaH, totalPages){
+    const app = this.app; const scaleFactor = this.scaleFactor; const container = this.selectorContainer;
+    // Remove previous arrows
+    if(this.arrowLeft){ try{ this.arrowLeft.parent && this.arrowLeft.parent.removeChild(this.arrowLeft); this.arrowLeft.destroy && this.arrowLeft.destroy({ children: true }); }catch(e){} this.arrowLeft = null; }
+    if(this.arrowRight){ try{ this.arrowRight.parent && this.arrowRight.parent.removeChild(this.arrowRight); this.arrowRight.destroy && this.arrowRight.destroy({ children: true }); }catch(e){} this.arrowRight = null; }
+
+    const centerY = areaY + Math.floor(areaH / 2);
+    const makeArrow = (direction) => {
+      const w = Math.floor(64*scaleFactor), h = Math.floor(64*scaleFactor);
+      const g = new Graphics();
+      g.beginFill(0x34495e).drawRoundedRect(-w/2, -h/2, w, h, Math.floor(12*scaleFactor)).endFill();
+      const tri = new Graphics();
+      tri.beginFill(0xffffff);
+      if(direction === 'left'){
+        tri.moveTo( w*0.2, 0);
+        tri.lineTo( w*0.6, -h*0.35);
+        tri.lineTo( w*0.6,  h*0.35);
+      }else{
+        tri.moveTo(-w*0.2, 0);
+        tri.lineTo(-w*0.6, -h*0.35);
+        tri.lineTo(-w*0.6,  h*0.35);
+      }
+      tri.endFill();
+      const c = new Container();
+      c.addChild(g); c.addChild(tri);
+      tri.x = 0; tri.y = 0;
+      c.eventMode = 'static'; c.cursor = 'pointer';
+      return c;
+    };
+
+    if(this.currentPage > 0){
+      const left = makeArrow('left');
+      left.x = areaX - Math.floor(80*scaleFactor);
+      left.y = centerY;
+      left.on('pointertap', () => { this.currentPage = Math.max(0, this.currentPage - 1); try{ localStorage.setItem('currentDifficultyPage', String(this.currentPage)); }catch(e){} this.show(); });
+      container.addChild(left);
+      this.arrowLeft = left;
+    }
+    if(this.currentPage < totalPages - 1){
+      const right = makeArrow('right');
+      right.x = areaX + areaW + Math.floor(80*scaleFactor);
+      right.y = centerY;
+      right.on('pointertap', () => { this.currentPage = Math.min(totalPages - 1, this.currentPage + 1); try{ localStorage.setItem('currentDifficultyPage', String(this.currentPage)); }catch(e){} this.show(); });
+      container.addChild(right);
+      this.arrowRight = right;
+    }
   },
 
   showConfirmResetModal(){

@@ -117,14 +117,27 @@ export const Nivel = {
 
   async loadLevel(levelNumber, selectorModule){
     const app = this.app; const scaleFactor = this.scaleFactor;
+    // Ensure previous grid figuras are removed before creating a new grid
+    clearGrid();
     currentLevel = levelNumber;
     if(selectorModule){ selectorModule.hide(); }
     levelUiContainer.visible = true;
     try{ if(Figura.selectionContainer){ Figura.selectionContainer.eventMode = 'passive'; Figura.selectionContainer.interactiveChildren = true; } }catch(e){}
     try{ const stackCopy = (Figura.selectedStack || []).slice(); stackCopy.forEach(f => { try{ f.descentralize(); }catch(e){} }); Figura.selectedStack = []; try{ Figura.updateSelectionUI && Figura.updateSelectionUI(); }catch(e){} }catch(e){}
     try{ if(Figura.selectionContainer) Figura.selectionContainer.visible = true; }catch(e){}
-    const solución = (selectorModule?.levelSolutions || [])[levelNumber - 1] || [];
-    Figura.figura_final = solución;
+    // Resolve composition from difficulties using global levelNumber (1-based)
+    let solucion = [];
+    try{
+      const diffs = selectorModule?.difficulties || [];
+      const globalIdx0 = Math.max(0, (levelNumber|0) - 1);
+      const page = Math.floor(globalIdx0 / 25);
+      const within = globalIdx0 % 25;
+      // Tint wallpaper according to difficulty page
+      try{ if(Figura && Figura.setWallpaperTint) Figura.setWallpaperTint(page); }catch(e){}
+      const pageArr = Array.isArray(diffs[page]) ? diffs[page] : [];
+      solucion = Array.isArray(pageArr[within]) ? pageArr[within] : [];
+    }catch(e){ solucion = []; }
+    Figura.figura_final = solucion;
     await Figura.applyFinal();
     showValidationUi();
     currentGrid = await createGrid(app, 18, 3, 2/3, 'images/bloque', '.png', { top: Math.floor(125*scaleFactor), bottom: Math.floor(100*scaleFactor), innerH: Math.floor(24*scaleFactor), innerV: Math.floor(24*scaleFactor) });
