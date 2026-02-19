@@ -1,6 +1,7 @@
 import { Container, Graphics, Text, TextStyle } from 'pixi.js';
 import { Figura } from './Figura.js';
 import { Nivel } from './Nivel.js';
+import { Menu } from './Menu.js';
 
 export const SeleccionarNivel = {
   init(app, scaleFactor){
@@ -25,7 +26,7 @@ export const SeleccionarNivel = {
 
   saveCompleted(){ try{ localStorage.setItem('completedLevels', JSON.stringify(Array.from(this.completedLevels))); }catch(e){} },
 
-  show(){
+  async show(){
     const app = this.app; const scaleFactor = this.scaleFactor;
     // Delegate to Nivel for cleanup of level UI
     try{ Nivel.cleanupLevelUi(); }catch(e){}
@@ -40,7 +41,8 @@ export const SeleccionarNivel = {
     if(totalPages === 0) return;
     this.currentPage = Math.max(0, Math.min(totalPages - 1, this.currentPage));
     try{ localStorage.setItem('currentDifficultyPage', String(this.currentPage)); }catch(e){}
-    // Tint wallpaper by current difficulty page
+    // Use plain wallpaper and tint by current difficulty page
+    try{ if(Figura && Figura.setWallpaperTexture) await Figura.setWallpaperTexture('plain'); }catch(e){}
     try{ if(Figura && Figura.setWallpaperTint) Figura.setWallpaperTint(this.currentPage); }catch(e){}
 
     // Compute page area and layout
@@ -53,6 +55,16 @@ export const SeleccionarNivel = {
     const areaH = Math.floor(usableH * 0.85);
     const areaX = Math.floor((app.screen.width - areaW) / 2);
     const areaY = Math.floor(marginTop + (usableH - areaH) / 2);
+
+    // Title centered at top, indicating current difficulty
+    const difficultyNames = ['Starter', 'Junior', 'Expert', 'Master'];
+    const titleText = difficultyNames[Math.max(0, Math.min(difficultyNames.length - 1, this.currentPage))] || 'Starter';
+    const title = new Text(titleText, new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(46*scaleFactor), fontWeight: '900', fill: 0x000000 }));
+    title.anchor.set(0.5);
+    title.x = Math.floor(app.screen.width / 2);
+    // Place above the grid area without overlapping
+    title.y = Math.floor(marginTop * 0.5);
+    container.addChild(title);
     const pageLevels = this.difficulties[this.currentPage] || [];
     // Force 5x5 grid layout
     const cols = 5;
@@ -90,9 +102,28 @@ export const SeleccionarNivel = {
 
     this.addResetProgressButton();
     this.addDifficultyArrows(areaX, areaY, areaW, areaH, totalPages);
+    this.addBackToMenuButton();
   },
 
   hide(){ if(this.selectorContainer) this.selectorContainer.visible = false; },
+
+  addBackToMenuButton(){
+    const app = this.app; const scaleFactor = this.scaleFactor; const container = this.selectorContainer;
+    if(this.backBtn){ try{ this.backBtn.parent && this.backBtn.parent.removeChild(this.backBtn); this.backBtn.destroy && this.backBtn.destroy({ children: true }); }catch(e){} this.backBtn = null; }
+    const w = Math.floor(220*scaleFactor), h = Math.floor(44*scaleFactor), r = Math.floor(10*scaleFactor);
+    const c = new Container();
+    const g = new Graphics();
+    g.beginFill(0x34495e).drawRoundedRect(0, 0, w, h, r).endFill();
+    const t = new Text('Volver al menú', new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(18*scaleFactor), fontWeight: 'bold', fill: 0xffffff }));
+    t.anchor.set(0.5); t.x = w/2; t.y = h/2;
+    c.addChild(g); c.addChild(t);
+    c.x = Math.floor(24*scaleFactor);
+    c.y = Math.floor(24*scaleFactor);
+    c.eventMode = 'static'; c.cursor = 'pointer';
+    c.on('pointertap', () => { try{ this.hide(); }catch(e){} try{ Menu.show && Menu.show(); }catch(e){} });
+    container.addChild(c);
+    this.backBtn = c;
+  },
 
   addResetProgressButton(){
     const app = this.app; const scaleFactor = this.scaleFactor; const container = this.selectorContainer;

@@ -1,0 +1,18 @@
+{
+  "tutorial1": {
+    "texto": "El objetivo del juego es hacer que la imagen de la parte superior se vea igual en el tablero de abajo en cada nivel.",
+    "imagen": "tutorial1.png"
+  },
+    "tutorial2": {
+    "texto": "Estas son tus piezas, haz clic en ellas para seleccionarlas. Puedes elegir hasta 6 piezas a la vez.",
+    "imagen": "tutorial2.png"
+  },
+  "tutorial3": {
+    "texto": "Puedes girar las piezas haciendo clic en ellas o cambiar su orden arrastrándolas.Las piezas que elijas primero se pondrán en la parte de atrás del tablero, y las demás irán encima de ellas.",
+    "imagen": "tutorial3.png"
+  },
+  "tutorial4": {
+    "texto": "Cuando quieras ver si has ganado, pulsa el botón para comprobarlo. ¡A jugar!",
+    "imagen": "tutorial4.png"
+  }
+}

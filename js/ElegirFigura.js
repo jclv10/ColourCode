@@ -76,10 +76,23 @@ export const ElegirFigura = {
     const gap = cls.selectionCell.gap;
     const leftThirdWidth = Math.floor(app.screen.width / 3);
 
-    const sampleStyle = new TextStyle({ fontFamily: 'Arial', fontSize: 16, fontWeight: 'bold', fill: 0x000000, align: 'center' });
+    const sampleStyle = new TextStyle({
+      fontFamily: 'Arial',
+      fontSize: 32, // doubled size to match visibility goal
+      fontWeight: 'bold',
+      fill: 0x000000,
+      align: 'center',
+      stroke: 0xffffff,
+      strokeThickness: 2,
+      dropShadow: true,
+      dropShadowColor: 0x000000,
+      dropShadowBlur: 1,
+      dropShadowAngle: Math.PI / 6,
+      dropShadowDistance: 2
+    });
     const sampleLabel = new Text('0', sampleStyle);
     const labelHeight = sampleLabel.height;
-    const labelMargin = 6;
+    const labelMargin = 8;
 
     const rowBlock = labelHeight + labelMargin + h;
     const totalHeight = rows * rowBlock + (rows - 1) * gap;
@@ -105,22 +118,29 @@ export const ElegirFigura = {
       const y = startY + row * (rowBlock + gap) + labelHeight + labelMargin;
 
       const occupied = i < cls.selectedStack.length;
-      const borderColor = occupied ? 0x1f8f4d : 0x999999;
-      const innerColor = occupied ? 0x2ecc71 : 0xffffff;
+      const borderColor = 0x999999;
       const borderRadius = 10;
       const border = new Graphics();
-      border.beginFill(borderColor);
-      border.drawRoundedRect(x, y, w, h, borderRadius);
-      border.endFill();
+      if(occupied){
+        // Transparent interior; only draw a subtle outline to keep grid visible
+        border.lineStyle(2, borderColor, 0.8);
+        border.drawRoundedRect(x, y, w, h, borderRadius);
+      }else{
+        border.beginFill(borderColor);
+        border.drawRoundedRect(x, y, w, h, borderRadius);
+        border.endFill();
+      }
       try{ border.zIndex = 1; }catch(e){}
       const inset = 4;
-      const inner = new Graphics();
-      inner.beginFill(innerColor);
-      inner.drawRoundedRect(x + inset, y + inset, w - inset * 2, h - inset * 2, Math.max(6, borderRadius - 2));
-      inner.endFill();
-      try{ inner.zIndex = 2; }catch(e){}
       container.addChild(border);
-      container.addChild(inner);
+      if(!occupied){
+        const inner = new Graphics();
+        inner.beginFill(0xffffff);
+        inner.drawRoundedRect(x + inset, y + inset, w - inset * 2, h - inset * 2, Math.max(6, borderRadius - 2));
+        inner.endFill();
+        try{ inner.zIndex = 2; }catch(e){}
+        container.addChild(inner);
+      }
 
       if(occupied){
         try{
@@ -214,7 +234,20 @@ export const ElegirFigura = {
           }
         }catch(e){}
       }
-      const numStyle = new TextStyle({ fontFamily: 'Arial', fontSize: 16, fontWeight: 'bold', fill: occupied ? 0xffffff : 0x4a4a4a, align: 'center' });
+      const numStyle = new TextStyle({
+        fontFamily: 'Arial',
+        fontSize: 32, // doubled size
+        fontWeight: 'bold',
+        fill: 0x2c3e50,
+        align: 'center',
+        stroke: 0xffffff,
+        strokeThickness: 2,
+        dropShadow: true,
+        dropShadowColor: 0x000000,
+        dropShadowBlur: 1,
+        dropShadowAngle: Math.PI / 6,
+        dropShadowDistance: 2
+      });
       const numTxt = new Text(String(i+1), numStyle);
       numTxt.x = x + (w - numTxt.width) / 2;
       numTxt.y = y - labelMargin - numTxt.height;

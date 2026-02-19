@@ -1,6 +1,8 @@
 import { Application, Assets, Sprite } from 'pixi.js';
 import { Figura } from './Figura.js';
 import { SeleccionarNivel } from './SeleccionarNivel.js';
+import { Menu } from './Menu.js';
+import { Tutorial } from './Tutorial.js';
 import { Nivel } from './Nivel.js';
 
 
@@ -26,7 +28,7 @@ import { Nivel } from './Nivel.js';
 
     // Set wallpaper background image stretched to screen
     try{
-        const wp = await Assets.load('images/wallpaper2.png');
+        const wp = await Assets.load('images/wallpaper-plain.png');
         const bg = new Sprite(wp);
         bg.anchor.set(0);
         bg.x = 0; bg.y = 0;
@@ -38,7 +40,7 @@ import { Nivel } from './Nivel.js';
         // Keep background sized on resize
         //window.addEventListener('resize', fitBg);
 
-        // Expose wallpaper reference and a tint helper by difficulty page
+        // Expose wallpaper reference and helpers to manage tint and texture
         try{
             Figura.wallpaperBgRef = bg;
             const tintMap = [0x2ecc71, 0xe67e22, 0xe74c3c, 0x9b59b6]; // green, orange, red, purple
@@ -48,6 +50,28 @@ import { Nivel } from './Nivel.js';
                     const color = tintMap[idx] ?? 0xFFFFFF;
                     if(Figura.wallpaperBgRef) Figura.wallpaperBgRef.tint = color;
                 }catch(e){}
+            };
+            Figura.resetWallpaperSize = () => {
+                try{
+                    const appRef = Figura.appRef || app;
+                    if(Figura.wallpaperBgRef && appRef){
+                        Figura.wallpaperBgRef.width = appRef.screen.width;
+                        Figura.wallpaperBgRef.height = appRef.screen.height;
+                    }
+                }catch(e){}
+            };
+            Figura._wallpaperCache = {};
+            Figura.setWallpaperTexture = async (type) => {
+                try{
+                    const path = type === 'logo' ? 'images/wallpaper-logo.png' : 'images/wallpaper-plain.png';
+                    let tex = Figura._wallpaperCache[path];
+                    if(!tex){ tex = await Assets.load(path); Figura._wallpaperCache[path] = tex; }
+                    if(Figura.wallpaperBgRef){
+                        Figura.wallpaperBgRef.texture = tex;
+                        Figura.wallpaperBgRef.tint = 0xFFFFFF; // reset tint when switching
+                        Figura.resetWallpaperSize && Figura.resetWallpaperSize();
+                    }
+                }catch(e){ console.error('Failed to set wallpaper texture', e); }
             };
         }catch(e){}
     }catch(e){ console.error('Failed to load wallpaper background', e); }
@@ -67,6 +91,8 @@ import { Nivel } from './Nivel.js';
     // Initialize selector and level runtime modules
     SeleccionarNivel.init(app, scaleFactor);
     Nivel.init(app, scaleFactor);
+    Menu.init(app, scaleFactor);
+    Tutorial.init(app, scaleFactor);
 
     // Load solutions and show selector
     try{
@@ -113,7 +139,8 @@ import { Nivel } from './Nivel.js';
         SeleccionarNivel.setSolutions(difficulties);
     }catch(e){ console.error('Failed to load Solucionario.json', e); }
 
-    SeleccionarNivel.show();
+    // Show main menu first
+    Menu.show();
 
 })();
 
