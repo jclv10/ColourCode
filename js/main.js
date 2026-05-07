@@ -4,6 +4,7 @@ import { SeleccionarNivel } from './SeleccionarNivel.js';
 import { Menu } from './Menu.js';
 import { Tutorial } from './Tutorial.js';
 import { Nivel } from './Nivel.js';
+import { Logs } from './Logs.js';
 
 
 (async () => {
@@ -17,7 +18,9 @@ import { Nivel } from './Nivel.js';
     await app.init({
         background: '#1099bb',
         resizeTo: window,
-        backgroundAlpha: 0.7
+        backgroundAlpha: 0.7,
+        preference: 'webgl',
+        antialias: false,
     });
 
     // Quitar barras de scroll
@@ -28,7 +31,7 @@ import { Nivel } from './Nivel.js';
 
     // Set wallpaper background image stretched to screen
     try{
-        const wp = await Assets.load('images/wallpaper-plain.png');
+        const wp = await Assets.load('/images/wallpaper-plain.png');
         const bg = new Sprite(wp);
         bg.anchor.set(0);
         bg.x = 0; bg.y = 0;
@@ -43,14 +46,18 @@ import { Nivel } from './Nivel.js';
         // Expose wallpaper reference and helpers to manage tint and texture
         try{
             Figura.wallpaperBgRef = bg;
+            // Tint control flag: disabled by default; enable via Figura.setWallpaperTintEnabled(true)
+            Figura.wallpaperTintEnabled = false;
             const tintMap = [0x2ecc71, 0xe67e22, 0xe74c3c, 0x9b59b6]; // green, orange, red, purple
             Figura.setWallpaperTint = (pageIdx) => {
                 try{
+                    if(!Figura.wallpaperTintEnabled) return; // no-op when disabled
                     const idx = Math.max(0, Math.min(tintMap.length-1, pageIdx|0));
                     const color = tintMap[idx] ?? 0xFFFFFF;
                     if(Figura.wallpaperBgRef) Figura.wallpaperBgRef.tint = color;
                 }catch(e){}
             };
+            Figura.setWallpaperTintEnabled = (on) => { try{ Figura.wallpaperTintEnabled = !!on; }catch(e){} };
             Figura.resetWallpaperSize = () => {
                 try{
                     const appRef = Figura.appRef || app;
@@ -63,7 +70,7 @@ import { Nivel } from './Nivel.js';
             Figura._wallpaperCache = {};
             Figura.setWallpaperTexture = async (type) => {
                 try{
-                    const path = type === 'logo' ? 'images/wallpaper-logo.png' : 'images/wallpaper-plain.png';
+                    const path = type === 'logo' ? '/images/wallpaper-logo.png' : '/images/wallpaper-plain.png';
                     let tex = Figura._wallpaperCache[path];
                     if(!tex){ tex = await Assets.load(path); Figura._wallpaperCache[path] = tex; }
                     if(Figura.wallpaperBgRef){
@@ -93,10 +100,11 @@ import { Nivel } from './Nivel.js';
     Nivel.init(app, scaleFactor);
     Menu.init(app, scaleFactor);
     Tutorial.init(app, scaleFactor);
+    Logs.init();
 
     // Load solutions and show selector
     try{
-        const res = await fetch('./Solucionario.json');
+        const res = await fetch('/Solucionario.json');
         const json = await res.json();
 
         // Detect difficulties shape or flat list

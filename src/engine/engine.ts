@@ -38,6 +38,7 @@ export class CreationEngine extends Application {
   public async init(opts: Partial<ApplicationOptions>): Promise<void> {
     opts.resizeTo ??= window;
     opts.resolution ??= getResolution();
+    opts.preference ??= "webgl";
 
     await super.init(opts);
 

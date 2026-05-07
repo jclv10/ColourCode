@@ -13,7 +13,7 @@ export const Victoria = {
     }
   },
 
-  show({ app, scaleFactor, currentLevel, timeText, onRepeat, onNext, onBackToMenu }){
+  show({ app, scaleFactor, currentLevel, timeText, onRepeat, onNext, onBackToMenu, onContinue }){
     if(!app) return;
     this.hide(app);
 
@@ -38,19 +38,22 @@ export const Victoria = {
     panel.beginFill(0xffffff).drawRoundedRect(panelX, panelY, panelW, panelH, Math.floor(18*scaleFactor)).endFill();
     panel.lineStyle(3, 0x2ecc71).drawRoundedRect(panelX, panelY, panelW, panelH, Math.floor(18*scaleFactor));
 
-    const title = new Text('Victoria!', new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(38*scaleFactor), fontWeight: '900', fill: 0x2ecc71 }));
-    title.anchor.set(0.5); title.x = panelX + panelW/2; title.y = panelY + Math.floor(60*scaleFactor);
-
-    const timeLabel = new Text(timeText || '', new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(24*scaleFactor), fill: 0x2c3e50 }));
-    timeLabel.anchor.set(0.5); timeLabel.x = panelX + panelW/2; timeLabel.y = panelY + Math.floor(120*scaleFactor);
     // Performance message based on extra selected figures vs final target
     const finalCount = Array.isArray(Figura.figura_final) ? Math.floor(Figura.figura_final.length / 2) : 0;
     const selectedCount = Array.isArray(Figura.selectedStack) ? Figura.selectedStack.length : 0;
     const extra = selectedCount - finalCount;
+
+    const titleColor = extra > 0 ? 0xf1c40f : 0x2ecc71;
+    const title = new Text('Victòria!', new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(38*scaleFactor), fontWeight: '900', fill: titleColor }));
+    title.anchor.set(0.5); title.x = panelX + panelW/2; title.y = panelY + Math.floor(60*scaleFactor);
+
+    const timeLabel = new Text(timeText || '', new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(24*scaleFactor), fill: 0x2c3e50 }));
+    timeLabel.anchor.set(0.5); timeLabel.x = panelX + panelW/2; timeLabel.y = panelY + Math.floor(120*scaleFactor);
+
     let performanceMsg = '';
-    if(extra > 0) performanceMsg = '\n¡La imagen se ve bien! \nPero has puesto algunas piezas que no necesitas.';
-    else if(extra === 0) performanceMsg = '\n¡Perfecto! ¡Lo lograste!';
-    else performanceMsg = '\nNo sabía que se podía hacer eso. ¡Increíble!';
+    if(extra > 0) performanceMsg = '\nLa imatge es veu bé! \nPerò has posat algunes peces que no necessites.';
+    else if(extra === 0) performanceMsg = '\nPerfecte! Ho has aconseguit!';
+    else performanceMsg = '\nNo sabia que es podia fer això. Increïble!';
 
     const perfLabel = new Text(performanceMsg, new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(22*scaleFactor), fill: 0x2c3e50 }));
     perfLabel.anchor.set(0.5); perfLabel.x = panelX + panelW/2; perfLabel.y = panelY + Math.floor(160*scaleFactor);
@@ -70,9 +73,18 @@ export const Victoria = {
       return cont;
     };
 
+    const restoreAfterClose = () => {
+      try{
+        if(Figura.selectionContainer){ Figura.selectionContainer.eventMode = 'passive'; Figura.selectionContainer.interactiveChildren = true; }
+        (Figura.selectedStack || []).forEach(f => { try{ f.eventMode = 'none'; f.cursor = null; }catch(e){} });
+      }catch(e){}
+    };
+
     const btnRepeat = makeBtn('Repetir', 0x3498db, () => { try{ onRepeat && onRepeat(); }catch(e){} });
-    const btnNext = makeBtn('Avanzar al siguiente nivel', 0x27ae60, () => { try{ onNext && onNext(); }catch(e){} });
-    const btnMenu = makeBtn('Volver al menú principal', 0x7f8c8d, () => { try{ onBackToMenu && onBackToMenu(); }catch(e){} });
+    const shouldShowContinue = extra !== 0;
+    const btnContinue = makeBtn('Continuar', 0xf1c40f, () => { try{ this.hide(app); }catch(e){} try{ restoreAfterClose(); }catch(e){} try{ onContinue && onContinue(); }catch(e){} });
+    const btnNext = makeBtn('Avançar al següent nivell', 0x27ae60, () => { try{ onNext && onNext(); }catch(e){} });
+    const btnMenu = makeBtn('Tornar al menú principal', 0x7f8c8d, () => { try{ onBackToMenu && onBackToMenu(); }catch(e){} });
 
     const btnY = panelY + panelH - Math.floor(70*scaleFactor);
     const buttons = [btnRepeat, btnNext, btnMenu];
@@ -80,6 +92,11 @@ export const Victoria = {
       const colCenterX = panelX + Math.floor(((i + 0.5) * panelW) / 3);
       buttons[i].x = colCenterX;
       buttons[i].y = btnY;
+    }
+    // Place "Continuar" above "Avançar al següent nivell" only when needed
+    if(shouldShowContinue){
+      btnContinue.x = btnNext.x;
+      btnContinue.y = btnY - Math.floor(60*scaleFactor);
     }
 
     const modal = new Container();
@@ -90,6 +107,7 @@ export const Victoria = {
     modal.addChild(timeLabel);
     modal.addChild(perfLabel);
     modal.addChild(btnRepeat);
+    if(shouldShowContinue) modal.addChild(btnContinue);
     modal.addChild(btnNext);
     modal.addChild(btnMenu);
     app.stage.addChild(modal);

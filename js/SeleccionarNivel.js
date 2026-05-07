@@ -12,6 +12,8 @@ export const SeleccionarNivel = {
     app.stage.addChild(this.selectorContainer);
     if(!app.stage.sortableChildren) app.stage.sortableChildren = true;
     this.completedLevels = new Set((() => { try{ return JSON.parse(localStorage.getItem('completedLevels') || '[]'); }catch{ return []; } })());
+    this.completedWithExtras = new Set((() => { try{ return JSON.parse(localStorage.getItem('completedWithExtras') || '[]'); }catch{ return []; } })());
+    this.abandonedLevels = new Set((() => { try{ return JSON.parse(localStorage.getItem('abandonedLevels') || '[]'); }catch{ return []; } })());
     // Difficulty paging (0: Starter, 1: Junior, 2: Expert, 3: Master)
     try{
       const stored = parseInt(localStorage.getItem('currentDifficultyPage') || '0', 10);
@@ -25,6 +27,40 @@ export const SeleccionarNivel = {
   setSolutions(difficulties){ this.difficulties = Array.isArray(difficulties) ? difficulties : []; },
 
   saveCompleted(){ try{ localStorage.setItem('completedLevels', JSON.stringify(Array.from(this.completedLevels))); }catch(e){} },
+  saveCompletedWithExtras(){ try{ localStorage.setItem('completedWithExtras', JSON.stringify(Array.from(this.completedWithExtras))); }catch(e){} },
+  saveAbandoned(){ try{ localStorage.setItem('abandonedLevels', JSON.stringify(Array.from(this.abandonedLevels))); }catch(e){} },
+
+  markLevelStarted(level){
+    const n = level | 0;
+    if(!n) return;
+    if(this.completedLevels.has(n) || this.completedWithExtras.has(n)) return;
+    this.abandonedLevels.add(n);
+    this.saveAbandoned();
+  },
+
+  markLevelAbandoned(level){
+    const n = level | 0;
+    if(!n) return;
+    if(this.completedLevels.has(n) || this.completedWithExtras.has(n)) return;
+    this.abandonedLevels.add(n);
+    this.saveAbandoned();
+  },
+
+  markLevelCompleted(level, usedExtras){
+    const n = level | 0;
+    if(!n) return;
+    this.abandonedLevels.delete(n);
+    this.saveAbandoned();
+    if(usedExtras){
+      this.completedWithExtras.add(n);
+      this.saveCompletedWithExtras();
+    }else{
+      this.completedWithExtras.delete(n);
+      this.saveCompletedWithExtras();
+      this.completedLevels.add(n);
+      this.saveCompleted();
+    }
+  },
 
   async show(){
     const app = this.app; const scaleFactor = this.scaleFactor;
@@ -81,9 +117,11 @@ export const SeleccionarNivel = {
       const y = areaY + row * (cellH + gap);
       const idx = this.currentPage * 25 + i + 1; // global level number (1-based)
       const completed = this.completedLevels.has(idx);
+      const completedExtras = this.completedWithExtras.has(idx);
+      const abandoned = this.abandonedLevels.has(idx);
       const hasData = Array.isArray(pageLevels[i]) && pageLevels[i].length > 0;
       const btn = new Graphics();
-      const color = completed ? 0x2ecc71 : (hasData ? 0x3498db : 0x7f8c8d);
+      const color = completedExtras ? 0xf1c40f : (completed ? 0x2ecc71 : (abandoned ? 0xe74c3c : (hasData ? 0x3498db : 0x7f8c8d)));
       btn.beginFill(color).drawRoundedRect(0, 0, cellW, cellH, Math.floor(14*scaleFactor)).endFill();
       btn.x = x; btn.y = y;
       if(hasData){
@@ -100,7 +138,7 @@ export const SeleccionarNivel = {
       container.addChild(txt);
     }
 
-    this.addResetProgressButton();
+    // Reset progress button moved to Menu
     this.addDifficultyArrows(areaX, areaY, areaW, areaH, totalPages);
     this.addBackToMenuButton();
   },
@@ -114,7 +152,7 @@ export const SeleccionarNivel = {
     const c = new Container();
     const g = new Graphics();
     g.beginFill(0x34495e).drawRoundedRect(0, 0, w, h, r).endFill();
-    const t = new Text('Volver al menú', new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(18*scaleFactor), fontWeight: 'bold', fill: 0xffffff }));
+    const t = new Text('Tornar al menú', new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(18*scaleFactor), fontWeight: 'bold', fill: 0xffffff }));
     t.anchor.set(0.5); t.x = w/2; t.y = h/2;
     c.addChild(g); c.addChild(t);
     c.x = Math.floor(24*scaleFactor);
@@ -132,7 +170,7 @@ export const SeleccionarNivel = {
     const c = new Container();
     const g = new Graphics();
     g.beginFill(0xe74c3c).drawRoundedRect(0, 0, w, h, r).endFill();
-    const t = new Text('Borrar progreso', new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(18*scaleFactor), fontWeight: 'bold', fill: 0xffffff }));
+    const t = new Text('Esborrar progrés', new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(18*scaleFactor), fontWeight: 'bold', fill: 0xffffff }));
     t.anchor.set(0.5); t.x = w/2; t.y = h/2;
     c.addChild(g); c.addChild(t);
     c.x = Math.floor(app.screen.width - w - 24*scaleFactor);
@@ -151,26 +189,19 @@ export const SeleccionarNivel = {
 
     const centerY = areaY + Math.floor(areaH / 2);
     const makeArrow = (direction) => {
-      const w = Math.floor(64*scaleFactor), h = Math.floor(64*scaleFactor);
+      const aw = Math.floor(48 * scaleFactor);
+      const ah = Math.floor(72 * scaleFactor);
       const g = new Graphics();
-      g.beginFill(0x34495e).drawRoundedRect(-w/2, -h/2, w, h, Math.floor(12*scaleFactor)).endFill();
-      const tri = new Graphics();
-      tri.beginFill(0xffffff);
+      g.beginFill(0x2c3e50);
       if(direction === 'left'){
-        tri.moveTo( w*0.2, 0);
-        tri.lineTo( w*0.6, -h*0.35);
-        tri.lineTo( w*0.6,  h*0.35);
+        g.moveTo(0, 0).lineTo(aw, -ah/2).lineTo(aw, ah/2).lineTo(0, 0);
       }else{
-        tri.moveTo(-w*0.2, 0);
-        tri.lineTo(-w*0.6, -h*0.35);
-        tri.lineTo(-w*0.6,  h*0.35);
+        g.moveTo(0, -ah/2).lineTo(aw, 0).lineTo(0, ah/2).lineTo(0, -ah/2);
       }
-      tri.endFill();
-      const c = new Container();
-      c.addChild(g); c.addChild(tri);
-      tri.x = 0; tri.y = 0;
-      c.eventMode = 'static'; c.cursor = 'pointer';
-      return c;
+      g.endFill();
+      g.eventMode = 'static';
+      g.cursor = 'pointer';
+      return g;
     };
 
     if(this.currentPage > 0){
@@ -206,10 +237,10 @@ export const SeleccionarNivel = {
     panel.beginFill(0x2c3e50).drawRoundedRect(panelX, panelY, panelW, panelH, Math.floor(16*scaleFactor)).endFill();
     panel.lineStyle(3, 0x34495e).drawRoundedRect(panelX, panelY, panelW, panelH, Math.floor(16*scaleFactor));
 
-    const title = new Text('ADVERTENCIA', new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(34*scaleFactor), fontWeight: '900', fill: 0xf1c40f }));
+    const title = new Text('AVÍS', new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(34*scaleFactor), fontWeight: '900', fill: 0xf1c40f }));
     title.anchor.set(0.5); title.x = panelX + panelW/2; title.y = panelY + Math.floor(60*scaleFactor);
 
-    const msg = new Text('Quieres eliminar tu progreso?', new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(22*scaleFactor), fill: 0xffffff }));
+    const msg = new Text('Vols eliminar el teu progrés?', new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(22*scaleFactor), fill: 0xffffff }));
     msg.anchor.set(0.5); msg.x = panelX + panelW/2; msg.y = panelY + Math.floor(120*scaleFactor);
 
     const makeBtn = (label, fill, cb) => {
@@ -227,7 +258,11 @@ export const SeleccionarNivel = {
 
     const btnYes = makeBtn('Sí', 0xe74c3c, () => {
       this.completedLevels.clear();
+      this.completedWithExtras.clear();
+      this.abandonedLevels.clear();
       this.saveCompleted();
+      this.saveCompletedWithExtras();
+      this.saveAbandoned();
       this.hideModal();
       this.show();
     });

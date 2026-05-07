@@ -7,16 +7,21 @@
     "start": "npm run dev",
     "build": "npm run lint && tsc && vite build",
     "lint": "eslint .",
-    "dev": "vite"
+    "dev": "vite",
+    "api": "node server/index.js"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.2.74",
     "@pixi/sound": "^6.0.1",
     "@pixi/ui": "^2.2.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
     "motion": "^12.4.7",
-    "pixi.js": "^8.14.2",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "mysql2": "^3.16.1",
+    "pixi.js": "^8.8.1",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
   },
   "devDependencies": {
     "@assetpack/core": "^1.4.0",

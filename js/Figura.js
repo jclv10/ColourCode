@@ -1,4 +1,3 @@
-import { text, th } from 'motion/react-client';
 import { Application, Assets, path, Sprite, Graphics, Container, Text, TextStyle, RenderTexture } from 'pixi.js';
 import { ElegirFigura } from './ElegirFigura.js';
 import { ValidarResultado } from './ValidarResultado.js';
@@ -10,8 +9,8 @@ class Figura extends Sprite {
 
     
     // Prefix for textures used in final target composition
-    // Use 'images/' and pass filenames like 'bloque1.png' in figura_final
-    static texturePrefix = 'images/';
+    // Use '/images/' and pass filenames like 'bloque1.png' in figura_final
+    static texturePrefix = '/images/';
     // Flat array [idOrPath, rotation, idOrPath, rotation, ...] describing the final stacked figuras
     static figura_final = [1, 0, 2, Math.PI / 2];
     // Internal: sprites created for figura_final (non-interactive)
@@ -25,7 +24,7 @@ class Figura extends Sprite {
     // Stack of figuras that have been centralized (oldest -> newest)
     static selectedStack = [];
     // Configurable maximum number of selected figuras allowed
-    static maxSelected = 6;
+    static maxSelected = 5;
     // Reference to the PIXI Application (set from first Figura instance)
     static appRef = null;
     // Container for the left-side selection cells UI
@@ -36,11 +35,11 @@ class Figura extends Sprite {
     static _isDraggingSelection = false;
     // Visual cell layout settings
     static selectionCell = {
-        width: 120,
-        height: 120,
-        gap: 24,
-        leftOffset: 18,
-        cols: 2
+        width: 112,
+        height: 112,
+        gap: 20,
+        leftOffset: 48,
+        cols: 1
     };
     // Add figura to selected stack (most-recent at end) and update zIndex
     static addToSelected(figura){
@@ -71,7 +70,7 @@ class Figura extends Sprite {
     static flashSelectionFull(){
         ElegirFigura.flashSelectionFull(this);
     }
-    constructor(app, x_origen = 0, y_origen = 0, nombre = "none", texture="images/formas-recortadas/test.png", isInteractive=true) {
+    constructor(app, x_origen = 0, y_origen = 0, nombre = "none", texture="/images/formas-recortadas/test.png", isInteractive=true) {
         super(texture);
             this.app = app
             // ensure stage supports sorting by zIndex
@@ -88,6 +87,8 @@ class Figura extends Sprite {
             this.nombre = nombre;
             // zIndex used by PIXI when sortableChildren = true
             this.zIndex = 0;
+
+        this._isInteractive = isInteractive;
 
         if(isInteractive){
             this.eventMode = 'static';
@@ -109,7 +110,8 @@ class Figura extends Sprite {
             this
                 .on("pointerdown", this.onPointerDown)
                 .on("pointermove", this.onPointerMove)
-                .on("pointerup", this.onPointerUp);
+                .on("pointerup", this.onPointerUp)
+                .on("pointerupoutside", this.onPointerUp);
         }
 
         // Center target moved from 1/2 to 2/3 of Y axis
@@ -171,8 +173,47 @@ class Figura extends Sprite {
         // If selecting a new figura would exceed capacity, refuse and flash UI
         const alreadySelected = cls.selectedStack.indexOf(this) !== -1;
         if(!alreadySelected && cls.selectedStack.length >= cls.maxSelected){
-            try{ cls.flashSelectionFull(); }catch(e){}
-            return;
+            // Show transient message akin to validation failures
+            try{ ValidarResultado.showValidateMessage(false, 'Només pots utilitzar 5 peces alhora', cls); }catch(e){}
+            // Flash the attempted figura's grid background in red and fade back
+            try{
+                const bg = this._gridBackgroundRef;
+                const dims = this._gridCellDims || {};
+                const parent = bg?.parent;
+                const app = cls.appRef;
+                if(bg && parent && app){
+                    const w = Math.round(dims.w || (bg.width || 100));
+                    const h = Math.round(dims.h || (bg.height || 100));
+                    const r = Math.round(dims.r || 10);
+                    const overlay = new Graphics();
+                    overlay.beginFill(0xe74c3c, 0.9).drawRoundedRect(-w/2, -h/2, w, h, r).endFill();
+                    overlay.x = bg.x; overlay.y = bg.y;
+                    // Place above background but below sprites
+                    try{ overlay.zIndex = -0.5; }catch(e){}
+                    parent.addChild(overlay);
+                    let step = 0;
+                    const steps = 20; // ~600ms at 30ms intervals
+                    const interval = setInterval(() => {
+                        step++;
+                        const t = step / steps;
+                        overlay.alpha = Math.max(0, 0.9 * (1 - t));
+                        if(step >= steps){
+                            clearInterval(interval);
+                            try{ parent.removeChild(overlay); overlay.destroy && overlay.destroy(); }catch(e){}
+                        }
+                    }, 30);
+                }
+            }catch(e){}
+            // Ensure rejected figuras return to their grid slot instead of staying where dropped
+            this.x = this.x_origen;
+            this.y = this.y_origen;
+            this.scale = cls.escala_imagenes_origen;
+            this.isCentralizedFlag = false;
+            if (this._isInteractive) {
+                this.eventMode = 'static';
+                this.cursor = 'pointer';
+            }
+            return false;
         }
 
         const pos = cls.posicion_central;
@@ -181,12 +222,19 @@ class Figura extends Sprite {
         this.scale = cls.escala_imagenes_seleccionadas;
         //this.scale.y = 1.3;
         this.isCentralizedFlag = true;
+
+        // Disable dragging for centralized figuras
+        if (this._isInteractive) {
+            this.eventMode = 'none';
+            this.cursor = 'default';
+        }
         
         //Cuando se centraliza, actualizamos startX/Y
         //this.startX = pos[0];
         //this.startY = pos[1];
         // Update selection stack and zIndex ordering
         try{ cls.addToSelected(this); }catch(e){ console.error('addToSelected error', e); }
+        return true;
     }
 
     descentralize(){
@@ -196,6 +244,12 @@ class Figura extends Sprite {
         //this.scale.y = 1;
         this.rotation = 0;
         this.isCentralizedFlag = false;
+
+        // Re-enable dragging for figuras back in grid
+        if (this._isInteractive) {
+            this.eventMode = 'static';
+            this.cursor = 'pointer';
+        }
 
         //Cuando se descentraliza, actualizamos startX/Y
         //this.startX = this.x_origen;
@@ -209,9 +263,73 @@ class Figura extends Sprite {
 
         // Reinicia estado movimiento
         this.hasMoved = false;
-        // Marca el inicio del arrastre si la figura está centralizada
-        if(this.isCentralizedFlag){
-            this.isDraggable = true;
+        // Marca el inicio del arrastre - allow dragging from any position
+        this.isDraggable = true;
+        
+        // Save original z-index and raise this figura above all others during drag
+        this._originalZIndex = this.zIndex;
+        this.zIndex = 999999;
+        
+        // Track current pointer position for smooth dragging
+        this._lastPointerPos = { x: e.global.x, y: e.global.y };
+        const app = this.app;
+        
+        // Create a global pointer move handler that captures all pointer movement
+        if (!this._globalPointerMoveHandler) {
+            this._globalPointerMoveHandler = (moveEvent) => {
+                if (this.isDraggable) {
+                    this._lastPointerPos = { x: moveEvent.clientX, y: moveEvent.clientY };
+                }
+            };
+        }
+        
+        // Listen to mousemove/pointermove at window level for global tracking
+        window.addEventListener('pointermove', this._globalPointerMoveHandler, true);
+        window.addEventListener('mousemove', this._globalPointerMoveHandler, true);
+        
+        // Add ticker to update position every frame based on current pointer position
+        if (!this._dragTickerHandler) {
+            this._dragTickerHandler = () => {
+                if (this.isDraggable && this._lastPointerPos && this.dragStart) {
+                    const newX = this._lastPointerPos.x - this.dragStart.x;
+                    const newY = this._lastPointerPos.y - this.dragStart.y;
+                    
+                    // Update position
+                    this.x = newX;
+                    this.y = newY;
+                    
+                    // Track if we've moved enough
+                    if (!this.hasMoved && (
+                        Math.abs(newX - this.startX) > 0 || 
+                        Math.abs(newY - this.startY) > 0
+                    )) {
+                        this.hasMoved = true;
+                        this.alpha = 0.7;
+                    }
+                }
+            };
+        }
+        app.ticker.add(this._dragTickerHandler);
+        
+        // If dragging from the left (non-centralized), temporarily disable event capture on all selection stack figures and UI
+        if (!this.isCentralizedFlag) {
+            const cls = this.constructor;
+            try {
+                cls.selectedStack.forEach(fig => {
+                    if (fig && fig !== this) {
+                        fig._originalEventMode = fig.eventMode;
+                        fig.eventMode = 'none'; // Disable to allow drag pass-through
+                    }
+                });
+                // Also disable the entire selection container to prevent button clicks blocking drag
+                if (cls.selectionContainer) {
+                    cls._originalContainerEventMode = cls.selectionContainer.eventMode;
+                    cls.selectionContainer.eventMode = 'none';
+                    cls.selectionContainer.interactiveChildren = false;
+                }
+            } catch (err) {}
+        }
+        
             // Posición inicial del puntero respecto a la escena
             const pos = e.global;
             // Calcula la distancia entre donde está el puntero y el origen del sprite. 
@@ -256,80 +374,185 @@ class Figura extends Sprite {
 
             this.hasLeftInitialArea = false;
 
-        }
-
         //La acción del clic no se maneja en pointerup para distinguir entre clic y arrastre
     }
 
     onPointerMove(e) {
 
         // La función solo seguirá si se puede arrastrar
-        if (!this.isDraggable) return;
+        if (!this.isDraggable || !this.dragStart) return;
 
-        // Calcula la nueva posición de la figura preservando el offset guardado en dragStart
-        const pos = e.global;
-        const newX = pos.x - this.dragStart.x;
-        const newY = pos.y - this.dragStart.y;
-        const clickToDragThreshold = 0;
-
-        // Si se movió lo suficiente, consideramos que es arrastre, no click
-        if (!this.hasMoved && (
-            Math.abs(newX - this.startX) > clickToDragThreshold || 
-            Math.abs(newY - this.startY) > clickToDragThreshold
-        )) {
-            this.hasMoved = true;
-            this.alpha = 0.7; // Opcional: cambia la apariencia al arrastrar
-        }
-        // Actualiza la posición de la figura
-        this.x = newX;
-        this.y = newY;
+        // Update the tracked pointer position for smooth dragging
+        this._lastPointerPos = { x: e.global.x, y: e.global.y };
 
         // --- DETECTAR SI RATÓN SALE DEL ÁREA ORIGINAL ---
-        if (this.hasMoved && !this.hasLeftInitialArea) {
-
-            //const pointerX = pos.x;
-            //const pointerY = pos.y;
+        // For non-centralized figures (from the left), allow dragging anywhere
+        // For centralized figures (in the center), check if leaving initial area
+        if (this.isCentralizedFlag && this.hasMoved && !this.hasLeftInitialArea) {
 
             const isOutside =
-            pos.x < this.initialArea.topLeft.x ||
-            pos.x > this.initialArea.topRight.x ||
-            pos.y < this.initialArea.topLeft.y ||
-            pos.y > this.initialArea.bottomLeft.y;
+            e.global.x < this.initialArea.topLeft.x ||
+            e.global.x > this.initialArea.topRight.x ||
+            e.global.y < this.initialArea.topLeft.y ||
+            e.global.y > this.initialArea.bottomLeft.y;
 
             if (isOutside && !this.hasLeftInitialArea) {
                 this.hasLeftInitialArea = true;
-                //console.log("El ratón ha salido del área");
 
-                // Dejamos de arrastrar
-                this.isDraggable = false;
-                this.alpha = 1;
-                // Volver a posición original
-                this.descentralize();
-                
+                // For centralized figures, return to center on exit
+                // For non-centralized figures from the left, allow free dragging
+                if (this.isCentralizedFlag) {
+                    this.isDraggable = false;
+                    this.alpha = 1;
+                    this.descentralize();
+                }
             }
+        } else if (!this.isCentralizedFlag && this.hasMoved) {
+            // For non-centralized figures, always set hasLeftInitialArea to allow free dragging
+            this.hasLeftInitialArea = true;
         }
-    
     }
 
     onPointerUp() {
         if (!this.hasMoved) {
             //console.log("CLICK en la figura");
-                this.clic_figura();
-        }else if(!this.isDraggable){
-                //Arrastrar sobre figura en coord original da problemas, así que actualizamos startX/Y
+            // Do nothing on click - only interactions via dragging
+        } else if (this.isCentralizedFlag) {
+            // For centralized figures, check if dragged outside area
+            if (!this.hasLeftInitialArea) {
                 //console.log("El ratón se ha soltado en la posición original de la figura");
                 this.startX = this.x;
                 this.startY = this.y;
             } else {
-            //console.log("El ratón no ha salido del área");
-            this.alpha = 1;
-            // Dejar figura en la posición central
-            this.x = this.startX;
-            this.y = this.startY;
+                //console.log("El ratón no ha salido del área");
+                this.alpha = 1;
+                // Dejar figura en la posición central
+                this.x = this.startX;
+                this.y = this.startY;
+            }
+        } else {
+            // For non-centralized figures from the level grid
+            const leftThirdWidth = Math.floor(this.app.screen.width / 3);
+            const rightThirdStart = leftThirdWidth * 2;
+            const cls = this.constructor;
+            
+            if (this.x < rightThirdStart) {
+                // Dropped in left or center area - detect which cell and insert at that position
+                this.alpha = 1;
+                
+                // Calculate cell positions
+                const app = this.app;
+                const n = cls.maxSelected;
+                const cols = cls.selectionCell.cols || 1;
+                const w = cls.selectionCell.width;
+                const h = cls.selectionCell.height;
+                const gap = cls.selectionCell.gap;
+                
+                const rowBlock = h;
+                const rows = Math.ceil(n / cols);
+                const totalHeight = rows * rowBlock + (rows - 1) * gap;
+                const startY = Math.round(app.screen.height / 2 - totalHeight / 2);
+                
+                const totalGridWidth = cols * w + (cols - 1) * gap;
+                const left = Math.max(0, Math.round((leftThirdWidth - totalGridWidth) / 2) + (cls.selectionCell.leftOffset || 0));
+                
+                // Find which cell this figura is over
+                let cellIndex = -1;
+                const tolerance = 60;
+                for (let i = 0; i < n; i++) {
+                    const row = (n - 1) - Math.floor(i / cols); // Reverse order
+                    const col = i % cols;
+                    const cellX = left + col * (w + gap);
+                    const cellY = startY + row * (rowBlock + gap);
+                    
+                    // Check if drop position is within this cell
+                    if (Math.abs(this.x - (cellX + w / 2)) < w / 2 + tolerance &&
+                        Math.abs(this.y - (cellY + h / 2)) < h / 2 + tolerance) {
+                        cellIndex = i;
+                        break;
+                    }
+                }
+                
+                // If over a specific cell, insert at that position; otherwise just centralize
+                if (cellIndex !== -1) {
+                    const alreadySelected = cls.selectedStack.indexOf(this) !== -1;
+                    if (!alreadySelected && cls.selectedStack.length >= cls.maxSelected) {
+                        // Stack is full
+                        try { ValidarResultado.showValidateMessage(false, 'Només pots utilitzar 5 peces alhora', cls); } catch (e) {}
+                        this.x = this.x_origen;
+                        this.y = this.y_origen;
+                    } else {
+                        // Centralize first to set proper position/scale, then insert at this cell position
+                        const centralized = this.centralize();
+                        if(!centralized){
+                            this.alpha = 1;
+                            return;
+                        }
+
+                        const currentIndex = cls.selectedStack.indexOf(this);
+                        if (currentIndex !== -1 && currentIndex !== cellIndex) {
+                            cls.selectedStack.splice(currentIndex, 1);
+                            cls.selectedStack.splice(cellIndex, 0, this);
+                        }
+
+                        // Update zIndex ordering
+                        const len = cls.selectedStack.length;
+                        cls.selectedStack.forEach((f, idx) => {
+                            const z = cls.maxSelected - (len - 1 - idx);
+                            try { f.zIndex = z; } catch (e) {}
+                        });
+
+                        try { ElegirFigura.updateSelectionUI && ElegirFigura.updateSelectionUI(cls); } catch (e) {}
+                    }
+                } else {
+                    // Not over a specific cell, just centralize normally
+                    this.centralize();
+                }
+            } else {
+                // Dropped back in grid area, return to original position
+                this.x = this.x_origen;
+                this.y = this.y_origen;
+                this.alpha = 1;
+            }
         }
         // Dejamos de arrastrar
         this.isDraggable = false;
         this.hasMoved = false;
+        
+        // Remove global pointer move listeners
+        if (this._globalPointerMoveHandler) {
+            window.removeEventListener('pointermove', this._globalPointerMoveHandler, true);
+            window.removeEventListener('mousemove', this._globalPointerMoveHandler, true);
+        }
+        if (this._dragTickerHandler && this.app) {
+            this.app.ticker.remove(this._dragTickerHandler);
+        }
+        this._lastPointerPos = null;
+        
+        // Restore original z-index only if not centralized
+        if (this._originalZIndex !== undefined && !this.isCentralizedFlag) {
+            this.zIndex = this._originalZIndex;
+            this._originalZIndex = undefined;
+        } else if (this.isCentralizedFlag) {
+            this._originalZIndex = undefined;
+        }
+        
+        // Restore event capture on centralized figures and selection container
+        const cls = this.constructor;
+        try {
+            cls.selectedStack.forEach(fig => {
+                if (fig && fig._originalEventMode) {
+                    fig.eventMode = fig._originalEventMode;
+                    fig._originalEventMode = null;
+                }
+            });
+            // Restore selection container event mode
+            if (cls.selectionContainer && cls._originalContainerEventMode !== undefined) {
+                cls.selectionContainer.eventMode = cls._originalContainerEventMode;
+                cls.selectionContainer.interactiveChildren = true;
+                cls._originalContainerEventMode = undefined;
+            }
+        } catch (err) {}
     }
 
     clic_figura() {

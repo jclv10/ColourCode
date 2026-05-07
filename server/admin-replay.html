@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Replay</title>
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #f3efe7;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    #app {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+      padding: 10px;
+      color: #1d2433;
+      font-weight: 700;
+      font-size: 14px;
+      text-shadow: 0 1px 0 #fff;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="replayLabel" class="overlay">Esperant dades del replay...</div>
+  </div>
+  <script type="importmap">
+    {
+      "imports": {
+        "pixi.js": "https://esm.sh/pixi.js@8.8.1?bundle"
+      }
+    }
+  </script>
+  <script type="module" src="/admin/AdminReplay.js"></script>
+</body>
+</html>

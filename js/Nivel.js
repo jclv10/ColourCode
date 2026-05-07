@@ -13,12 +13,15 @@ let modalContainer = null; // legacy; victory modal moved to Victoria.js
 let timerText = null;
 let levelStartTime = null;
 let currentGrid = [];
+let gridBorders = [];
+let gridBackgrounds = [];
 let currentLevel = null;
 let levelTitleText = null;
+let levelCompleted = false;
 
 const baseHeight = 1080;
 
-async function createGrid(app, gridCount = 18, cols = 3, startXRatio = 2 / 3, texturePrefix = 'images/bloque', textureExt = '.png', padding = { top: 24, bottom: 24, innerH: 24, innerV: 24 }){
+async function createGrid(app, gridCount = 18, cols = 3, startXRatio = 2 / 3, texturePrefix = '/images/bloque', textureExt = '.png', padding = { top: 24, bottom: 24, innerH: 24, innerV: 24 }){
   const rows = Math.ceil(gridCount / cols);
   const rightStartX = Math.floor(startXRatio * app.screen.width);
   const gridWidth = app.screen.width - rightStartX - (padding.innerH || 0);
@@ -35,6 +38,34 @@ async function createGrid(app, gridCount = 18, cols = 3, startXRatio = 2 / 3, te
     const fig = await Figura.create(app, x, y, `grid_${i + 1}`, texturePath, true);
     if(levelUiContainer && fig && fig.parent){ try{ fig.parent.removeChild(fig); }catch(e){} try{ levelUiContainer.addChild(fig); }catch(e){} }
     gridFigures.push(fig);
+
+    // Add soft-blue background and blue outline for each grid cell
+    try{
+      const r = Math.floor(10 * (app.screen.height / baseHeight));
+      const w = Math.floor(cellW * 0.96);
+      const h = Math.floor(cellH * 0.96);
+
+      // Background behind the figura
+      const bg = new Graphics();
+      bg.beginFill(0xD6EAF8, 0.55).drawRoundedRect(-w/2, -h/2, w, h, r).endFill();
+      bg.x = x; bg.y = y;
+      bg.zIndex = -1; // behind sprites
+      try{ bg.eventMode = 'none'; }catch(e){} // Disable interaction to prevent blocking drags
+      levelUiContainer.addChild(bg);
+      gridBackgrounds.push(bg);
+      // Tie background metadata to figura for contextual feedback
+      try{ fig._gridBackgroundRef = bg; fig._gridCellDims = { w, h, r }; }catch(e){}
+
+      // Outline above the figura
+      const outline = new Graphics();
+      outline.lineStyle(4, 0x3498db, 1);
+      outline.drawRoundedRect(-w/2, -h/2, w, h, r);
+      outline.x = x; outline.y = y;
+      outline.zIndex = 100; // above sprites
+      try{ outline.eventMode = 'none'; }catch(e){} // Disable interaction to prevent blocking drags
+      levelUiContainer.addChild(outline);
+      gridBorders.push(outline);
+    }catch(e){}
   }
   return gridFigures;
 }
@@ -46,7 +77,7 @@ const addBackButton = (app, scaleFactor) => {
   const c = new Container();
   const g = new Graphics();
   g.beginFill(0x34495e).drawRoundedRect(0, 0, w, h, r).endFill();
-  const t = new Text('Volver', new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(20*scaleFactor), fontWeight: 'bold', fill: 0xffffff }));
+  const t = new Text('Tornar', new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(20*scaleFactor), fontWeight: 'bold', fill: 0xffffff }));
   t.anchor.set(0.5);
   t.x = w/2; t.y = h/2;
   c.addChild(g); c.addChild(t);
@@ -63,11 +94,11 @@ const showValidationUi = () => { try{ if(Figura._validateButton) Figura._validat
 const removeTimer = (app) => { if(timerText){ try{ timerText.parent && timerText.parent.removeChild(timerText); timerText.destroy && timerText.destroy(); }catch(e){} timerText = null; } levelStartTime = null; try{ app.ticker.remove(updateTimer); }catch(e){} };
 const formatElapsed = (ms) => { const totalSec = Math.floor(ms/1000); const minutes = Math.floor(totalSec/60); const seconds = totalSec % 60; const pad = (n) => n.toString().padStart(2,'0'); return `⌛ ${pad(minutes)} : ${pad(seconds)}`; };
 const updateTimer = () => { const app = Figura.appRef; if(!levelStartTime || !timerText || !app) return; const now = performance.now(); const elapsed = now - levelStartTime; timerText.text = formatElapsed(elapsed); };
-const addTimer = (app, scaleFactor) => {
+const addTimer = (app, scaleFactor, withTicker = true) => {
   removeTimer(app);
   const style = new TextStyle({
     fontFamily: 'Arial',
-    fontSize: Math.floor(48 * scaleFactor), // doubled size
+    fontSize: Math.floor(64 * scaleFactor),
     fontWeight: 'bold',
     fill: 0x2c3e50,
     // Improve readability with outline and shadow
@@ -83,22 +114,32 @@ const addTimer = (app, scaleFactor) => {
   t.anchor.set(0.5);
   const leftThirdW = Math.floor(app.screen.width / 3);
   t.x = Math.floor(leftThirdW / 2);
-  t.y = Math.floor(app.screen.height / 8);
+  t.y = Math.floor(app.screen.height / 10);
   levelUiContainer.addChild(t);
   timerText = t;
-  levelStartTime = performance.now();
-  app.ticker.add(updateTimer);
+  if(withTicker){
+    levelStartTime = performance.now();
+    app.ticker.add(updateTimer);
+  }else{
+    levelStartTime = null;
+  }
 };
 
 const addResetSelectedButton = async (app) => {
   if(resetSelectedBtn){ try{ resetSelectedBtn.parent && resetSelectedBtn.parent.removeChild(resetSelectedBtn); resetSelectedBtn.destroy && resetSelectedBtn.destroy({ children: true }); }catch(e){} resetSelectedBtn = null; }
   try{
-    const tex = await Assets.load('images/btnReset.png');
+    const tex = await Assets.load('/images/btnReset.png');
     const spr = new Sprite(tex);
     spr.anchor.set(0.5);
     const leftThirdW = Math.floor(app.screen.width / 3);
-    spr.x = Math.floor(leftThirdW / 2);
-    spr.y = Math.round(app.screen.height * 5 / 6);
+    const cellCfg = Figura.selectionCell || {};
+    const cols = cellCfg.cols || 1;
+    const cellW = cellCfg.width || 100;
+    const cellGap = cellCfg.gap || 20;
+    const totalGridWidth = cols * cellW + (cols - 1) * cellGap;
+    const stackLeft = Math.max(0, Math.round((leftThirdW - totalGridWidth) / 2) + (cellCfg.leftOffset || 0));
+    spr.x = Math.round(stackLeft + totalGridWidth / 2);
+    spr.y = Math.round(app.screen.height * 7 / 8);
     const s = Math.max(0.6, Math.min(1.2, app.screen.height / baseHeight));
     spr.scale.set(s);
     spr.eventMode = 'static';
@@ -110,6 +151,7 @@ const addResetSelectedButton = async (app) => {
         stackCopy.forEach(f => { try{ f.descentralize(); }catch(e){} });
         Figura.selectedStack = [];
         try{ Figura.updateSelectionUI && Figura.updateSelectionUI(); }catch(e){}
+        try{ window.dispatchEvent(new CustomEvent('partida:event', { detail: { reset: true } })); }catch(e){}
       }catch(e){ console.error('Failed to reset selection', e); }
     });
     app.stage.addChild(spr);
@@ -126,7 +168,20 @@ const removeResetSelectedButton = () => {
   }
 };
 
-const clearGrid = () => { if(currentGrid && currentGrid.length){ currentGrid.forEach(fig => { try{ fig.parent && fig.parent.removeChild(fig); fig.destroy && fig.destroy(); }catch(e){} }); currentGrid = []; } };
+const clearGrid = () => {
+  if(currentGrid && currentGrid.length){
+    currentGrid.forEach(fig => { try{ fig.parent && fig.parent.removeChild(fig); fig.destroy && fig.destroy(); }catch(e){} });
+    currentGrid = [];
+  }
+  if(gridBorders && gridBorders.length){
+    gridBorders.forEach(b => { try{ b.parent && b.parent.removeChild(b); b.destroy && b.destroy(); }catch(e){} });
+    gridBorders = [];
+  }
+  if(gridBackgrounds && gridBackgrounds.length){
+    gridBackgrounds.forEach(b => { try{ b.parent && b.parent.removeChild(b); b.destroy && b.destroy(); }catch(e){} });
+    gridBackgrounds = [];
+  }
+};
 
 const removeAreaBoxes = (app) => {
   try{
@@ -176,7 +231,7 @@ const removeLevelTitle = () => {
 const addLevelTitle = (app, scaleFactor) => {
   removeLevelTitle();
   // Create a centered title above the figura_final area
-  const titleStr = `Nivel ${currentLevel ?? ''}`;
+  const titleStr = `Nivell ${currentLevel ?? ''}`;
   const style = new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(42*scaleFactor), fontWeight: '900', fill: 0x000000 });
   const t = new Text(titleStr, style);
   t.anchor.set(0.5);
@@ -195,10 +250,17 @@ export const Nivel = {
     levelUiContainer.zIndex = 2;
     app.stage.addChild(levelUiContainer);
     if(!app.stage.sortableChildren) app.stage.sortableChildren = true;
+    try{ levelUiContainer.sortableChildren = true; }catch(e){}
 
     Figura.onValidation = (success) => {
       if(success && currentLevel != null){
-        try{ SeleccionarNivel.completedLevels.add(currentLevel); SeleccionarNivel.saveCompleted(); }catch(e){}
+        try{
+          const finalCount = Array.isArray(Figura.figura_final) ? Math.floor(Figura.figura_final.length / 2) : 0;
+          const selectedCount = Array.isArray(Figura.selectedStack) ? Figura.selectedStack.length : 0;
+          const usedExtras = (selectedCount - finalCount) > 0;
+          SeleccionarNivel.markLevelCompleted && SeleccionarNivel.markLevelCompleted(currentLevel, usedExtras);
+        }catch(e){}
+        levelCompleted = true;
         const appRef = this.app;
         try{ appRef && appRef.ticker && appRef.ticker.remove(updateTimer); }catch(e){}
         const endTime = performance.now();
@@ -209,11 +271,22 @@ export const Nivel = {
           scaleFactor: this.scaleFactor,
           currentLevel,
           timeText,
+          onContinue: () => {
+            try{ window.dispatchEvent(new CustomEvent('partida:event', { detail: { continuar: true } })); }catch(e){}
+            try{
+              const now = performance.now();
+              levelStartTime = now - elapsedMs;
+              appRef && appRef.ticker && appRef.ticker.remove(updateTimer);
+              appRef && appRef.ticker && appRef.ticker.add(updateTimer);
+            }catch(e){}
+          },
           onRepeat: async () => {
+            try{ window.dispatchEvent(new CustomEvent('partida:event', { detail: { repetir: true } })); }catch(e){}
             try{ Victoria.hide(appRef); }catch(e){}
             await this.loadLevel(currentLevel, SeleccionarNivel);
           },
           onNext: async () => {
+            try{ window.dispatchEvent(new CustomEvent('partida:event', { detail: { avanzar: true } })); }catch(e){}
             try{ Victoria.hide(appRef); }catch(e){}
             const diffs = SeleccionarNivel?.difficulties || [];
             const next = (currentLevel || 1) + 1;
@@ -234,6 +307,7 @@ export const Nivel = {
             }
           },
           onBackToMenu: async () => {
+            try{ window.dispatchEvent(new CustomEvent('partida:event', { detail: { volver_menu: true } })); }catch(e){}
             try{ Victoria.hide(appRef); }catch(e){}
             await backToSelector();
           }
@@ -244,9 +318,12 @@ export const Nivel = {
 
   async loadLevel(levelNumber, selectorModule){
     const app = this.app; const scaleFactor = this.scaleFactor;
+    const replayMode = typeof window !== 'undefined' && !!window.__CCO_REPLAY_MODE__;
     // Ensure previous grid figuras are removed before creating a new grid
     clearGrid();
     currentLevel = levelNumber;
+    levelCompleted = false;
+    try{ selectorModule && selectorModule.markLevelStarted && selectorModule.markLevelStarted(currentLevel); }catch(e){}
     if(selectorModule){ selectorModule.hide(); }
     levelUiContainer.visible = true;
     try{ if(Figura.selectionContainer){ Figura.selectionContainer.eventMode = 'passive'; Figura.selectionContainer.interactiveChildren = true; } }catch(e){}
@@ -270,10 +347,19 @@ export const Nivel = {
     addAreaBoxes(app, scaleFactor);
     addLevelTitle(app, scaleFactor);
     showValidationUi();
-    currentGrid = await createGrid(app, 18, 3, 2/3, 'images/bloque', '.png', { top: Math.floor(125*scaleFactor), bottom: Math.floor(100*scaleFactor), innerH: Math.floor(24*scaleFactor), innerV: Math.floor(24*scaleFactor) });
-    addBackButton(app, scaleFactor);
+    currentGrid = await createGrid(app, 18, 3, 2/3, '/images/bloque', '.png', { top: Math.floor(125*scaleFactor), bottom: Math.floor(100*scaleFactor), innerH: Math.floor(24*scaleFactor), innerV: Math.floor(24*scaleFactor) });
+    if(!replayMode) addBackButton(app, scaleFactor);
+    else removeBackButton();
     await addResetSelectedButton(app);
-    addTimer(app, scaleFactor);
+    addTimer(app, scaleFactor, !replayMode);
+    if(replayMode){
+      removeBackButton();
+      if(timerText) timerText.text = formatElapsed(0);
+    }
+  },
+
+  setReplayElapsed(ms){
+    if(timerText) timerText.text = formatElapsed(ms);
   },
   
   cleanupLevelUi(){
@@ -311,6 +397,12 @@ export const Nivel = {
 
 async function backToSelector(){
   const app = Figura.appRef;
+  try{
+    if(currentLevel && !levelCompleted){
+      SeleccionarNivel.markLevelAbandoned && SeleccionarNivel.markLevelAbandoned(currentLevel);
+      try{ window.dispatchEvent(new CustomEvent('partida:event', { detail: { salir: true } })); }catch(e){}
+    }
+  }catch(e){}
   // Proactively cleanup all level UI elements before showing selector
   try{ Nivel.cleanupLevelUi && Nivel.cleanupLevelUi(); }catch(e){}
   try{ removeResetSelectedButton(); }catch(e){}

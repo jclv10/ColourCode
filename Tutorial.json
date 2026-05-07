@@ -1,18 +1,18 @@
 {
   "tutorial1": {
-    "texto": "El objetivo del juego es hacer que la imagen de la parte superior se vea igual en el tablero de abajo en cada nivel.",
+    "texto": "L’objectiu del joc és fer que la imatge d'adalt sigui igual que la del tauler de devall a cada nivell.",
     "imagen": "tutorial1.png"
   },
     "tutorial2": {
-    "texto": "Estas son tus piezas, haz clic en ellas para seleccionarlas. Puedes elegir hasta 6 piezas a la vez.",
+    "texto": "Aquestes són ses teves peces. Arrossega-les al tauler per col·locar-les. Pots posar fins a 5 peces a la vegada.",
     "imagen": "tutorial2.png"
   },
   "tutorial3": {
-    "texto": "Puedes girar las piezas haciendo clic en ellas o cambiar su orden arrastrándolas.Las piezas que elijas primero se pondrán en la parte de atrás del tablero, y las demás irán encima de ellas.",
+    "texto": "Usa es botons per girar sa peça. Arrossega ses peces per ordenar-les. Ses primeres que posis quedaran davall, i ses altres es posaran damunt, com una torre.",
     "imagen": "tutorial3.png"
   },
   "tutorial4": {
-    "texto": "Cuando quieras ver si has ganado, pulsa el botón para comprobarlo. ¡A jugar!",
+    "texto": "Quan vulguis veure si has guanyat, pitja el botó per comprovar-ho",
     "imagen": "tutorial4.png"
   }
 }

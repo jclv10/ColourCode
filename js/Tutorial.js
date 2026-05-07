@@ -1,6 +1,8 @@
 import { Container, Graphics, Text, TextStyle, Sprite, Assets } from 'pixi.js';
 import { Menu } from './Menu.js';
 import { Figura } from './Figura.js';
+import { Nivel } from './Nivel.js';
+import { SeleccionarNivel } from './SeleccionarNivel.js';
 
 export const Tutorial = {
   init(app, scaleFactor){
@@ -30,6 +32,7 @@ export const Tutorial = {
     this._arrowRight = null;
     this._arrowLeft = null;
     this._backBtn = null;
+    this._playBtn = null;
   },
 
   setTexts(arr){
@@ -41,7 +44,7 @@ export const Tutorial = {
     if(Array.isArray(this._pages) && this._pages.length > 0) return;
     // Try to load from Tutorial.json first
     try{
-      const res = await fetch('./Tutorial.json');
+      const res = await fetch('/Tutorial.json');
       if(res && res.ok){
         const data = await res.json();
         let candidates = [];
@@ -57,8 +60,8 @@ export const Tutorial = {
           const rawImage = (entry && (entry.image || entry.img || entry.path || entry.imagen || entry.imagen_es)) || null;
           const text = (entry && (entry.text || entry.descripcion || entry.descripcion_es || entry.texto)) || '';
           let image = rawImage;
-          if(image && !/^https?:\/\//i.test(image) && !image.startsWith('images/')){
-            image = `images/${image}`;
+          if(image && !/^https?:\/\//i.test(image) && !image.startsWith('/images/')){
+            image = image.startsWith('images/') ? `/${image}` : `/images/${image}`;
           }
           if(!image) continue;
           try{
@@ -76,7 +79,7 @@ export const Tutorial = {
     // Fallback: scan images/tutorialN.png and use legacy texts if present
     const pages = [];
     for(let i=1;i<=50;i++){
-      const path = `images/tutorial${i}.png`;
+      const path = `/images/tutorial${i}.png`;
       try{
         const tex = await Assets.load(path);
         if(tex){
@@ -94,7 +97,7 @@ export const Tutorial = {
     this.container.removeChildren();
 
     if(!this._pages || this._pages.length === 0){
-      const info = new Text('No se encontraron tutoriales', new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(32*scale), fill: 0xe74c3c }));
+      const info = new Text('No s’han trobat tutorials', new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(32*scale), fill: 0xe74c3c }));
       info.anchor.set(0.5);
       info.x = Math.floor(app.screen.width / 2);
       info.y = Math.floor(app.screen.height / 2);
@@ -143,6 +146,9 @@ export const Tutorial = {
 
     if(this._pages.length > 1){
       this._addArrows();
+    }
+    if(this._current === this._pages.length - 1){
+      this._addPlayButton();
     }
     this._addBackButton();
   },
@@ -196,7 +202,7 @@ export const Tutorial = {
     const cont = new Container();
     const bg = new Graphics();
     bg.beginFill(0x7f8c8d).drawRoundedRect(0, 0, bw, bh, br).endFill();
-    const tt = new Text('Volver al menú', new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(20*scale), fontWeight: 'bold', fill: 0xffffff }));
+    const tt = new Text('Tornar al menú', new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(20*scale), fontWeight: 'bold', fill: 0xffffff }));
     tt.anchor.set(0.5);
     tt.x = bw/2; tt.y = bh/2;
     cont.addChild(bg); cont.addChild(tt);
@@ -206,6 +212,37 @@ export const Tutorial = {
     cont.on('pointertap', () => { this.hide(); Menu && Menu.show && Menu.show(); });
     this.container.addChild(cont);
     this._backBtn = cont;
+  },
+
+  _addPlayButton(){
+    const app = this.app;
+    const scale = this.scaleFactor;
+    const bw = Math.floor(180 * scale), bh = Math.floor(56 * scale), br = Math.floor(14 * scale);
+    const cont = new Container();
+    const bg = new Graphics();
+    bg.beginFill(0x27ae60).drawRoundedRect(0, 0, bw, bh, br).endFill();
+    const tt = new Text('A jugar!', new TextStyle({ fontFamily: 'Arial', fontSize: Math.floor(22 * scale), fontWeight: 'bold', fill: 0xffffff }));
+    tt.anchor.set(0.5);
+    tt.x = bw / 2;
+    tt.y = bh / 2;
+    cont.addChild(bg);
+    cont.addChild(tt);
+    const centerTargetX = Math.floor(app.screen.width / 2 - bw / 2);
+    const textRight = this._textLabel ? Math.floor(this._textLabel.x + this._textLabel.width) : Math.floor(app.screen.width * 0.58);
+    const minRightOfTextX = textRight + Math.floor(20 * scale);
+    const maxX = Math.floor(app.screen.width - bw - 24 * scale);
+    cont.x = Math.min(maxX, Math.max(centerTargetX, minRightOfTextX));
+    cont.y = this._textLabel
+      ? Math.floor(this._textLabel.y - bh / 2)
+      : Math.floor(app.screen.height * 0.84);
+    cont.eventMode = 'static';
+    cont.cursor = 'pointer';
+    cont.on('pointertap', async () => {
+      try{ this.hide(); }catch(e){}
+      try{ await Nivel.loadLevel(1, SeleccionarNivel); }catch(e){}
+    });
+    this.container.addChild(cont);
+    this._playBtn = cont;
   },
 
   async show(){

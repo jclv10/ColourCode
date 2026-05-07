@@ -26,3 +26,20 @@ La función Figura.applyFinal() actualiza la solución del nivel actual con la s
 // Retrieved 2025-11-19, License - CC BY-SA 4.0
 // Uncaught Error: Cannot find module 'react/jsx-runtime'
 npm install react@latest react-dom@latest
+
+
+npm run api & npx vite
+
+
+
+Editar MySQL para tener genero OTRO:
+
+ALTER TABLE Usuari
+DROP CHECK CK_Usuari_Genere;
+
+ALTER TABLE Usuari
+ADD CONSTRAINT CK_Usuari_Genere
+CHECK (
+    genere IS NULL 
+    OR genere IN ('home','dona','altre')
+);

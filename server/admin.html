@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ColourCode Admin</title>
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --bg-2: #fff8ee;
+      --ink: #1d2433;
+      --muted: #687086;
+      --line: #d9cfbf;
+      --accent: #0f766e;
+      --accent-2: #f59e0b;
+      --danger: #b91c1c;
+      --ok: #166534;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 12%, #ffe6b8 0%, transparent 30%),
+        radial-gradient(circle at 92% 8%, #d8f7f0 0%, transparent 26%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .shell {
+      max-width: 1200px;
+      margin: 0 auto;
+      border: 2px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(3px);
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(29, 36, 51, 0.08);
+      animation: rise 0.45s ease;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    header {
+      padding: 18px 20px;
+      border-bottom: 2px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 1.4rem;
+      letter-spacing: 0.01em;
+    }
+
+    .sub {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    main { padding: 20px; }
+
+    .login-wrap {
+      max-width: 420px;
+      margin: 12px auto;
+      border: 2px solid var(--line);
+      border-radius: 14px;
+      padding: 18px;
+      background: #fff;
+    }
+
+    .grid { display: grid; gap: 10px; }
+
+    label {
+      font-weight: 700;
+      font-size: 0.88rem;
+    }
+
+    input, select, button {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 9px 10px;
+      font-size: 0.95rem;
+      width: 100%;
+    }
+
+    button {
+      cursor: pointer;
+      border-width: 2px;
+      font-weight: 700;
+      background: #fff;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .btn-secondary {
+      border-color: var(--accent-2);
+      color: #51310c;
+      background: #ffefcf;
+    }
+
+    .btn-danger {
+      border-color: var(--danger);
+      color: var(--danger);
+      background: #fff;
+    }
+
+    .status {
+      min-height: 1.2rem;
+      margin-top: 8px;
+      font-size: 0.9rem;
+    }
+
+    .status.error { color: var(--danger); }
+    .status.ok { color: var(--ok); }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      width: auto;
+      padding: 8px 12px;
+    }
+
+    .option {
+      border: 2px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .toolbar .span-2 { grid-column: span 2; }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .actions button {
+      width: auto;
+      min-width: 140px;
+    }
+
+    .table-wrap {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: auto;
+      max-height: 60vh;
+      background: #fff;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 700px;
+    }
+
+    th, td {
+      border-bottom: 1px solid #ece3d6;
+      padding: 8px;
+      text-align: left;
+      font-size: 0.86rem;
+      white-space: nowrap;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: #fdf8ee;
+      z-index: 1;
+    }
+
+    .muted { color: var(--muted); }
+
+    .playback-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .playback-stage {
+      margin-bottom: 12px;
+    }
+
+    .box {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      padding: 10px;
+    }
+
+    .box h4 {
+      margin: 0 0 8px;
+      font-size: 0.95rem;
+    }
+
+    .step-list {
+      max-height: 48vh;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .step-item {
+      padding: 8px 10px;
+      border-bottom: 1px solid #ece3d6;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .step-item.active {
+      background: #e8f5f2;
+      border-left: 4px solid var(--accent);
+      padding-left: 6px;
+      font-weight: 700;
+    }
+
+    .kvs {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      font-size: 0.86rem;
+    }
+
+    .kv {
+      border: 1px solid #ece3d6;
+      border-radius: 8px;
+      padding: 8px;
+      background: #fffdf8;
+    }
+
+    .fig-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .snapshot-wrap {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #f9f6f0;
+    }
+
+    .snapshot-canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      background: #f9f6f0;
+    }
+
+    .replay-frame {
+      width: 100%;
+      height: min(92vh, 1280px);
+      border: 0;
+      display: block;
+      background: #f9f6f0;
+    }
+
+    .fig-cell {
+      border: 1px solid #ece3d6;
+      border-radius: 8px;
+      padding: 6px;
+      font-size: 0.8rem;
+      background: #fff;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .toolbar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .toolbar .span-2 { grid-column: span 2; }
+      .playback-grid {
+        grid-template-columns: 1fr;
+      }
+      .replay-frame {
+        height: 78vh;
+      }
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div>
+        <h1 class="title">ColourCode Admin</h1>
+        <p class="sub">Accedeix a les dades de Partida i Usuari amb filtres i exportació CSV.</p>
+      </div>
+      <button id="logoutBtn" class="btn-danger" style="display:none; width:auto;">Tanca sessió</button>
+    </header>
+
+    <main>
+      <section id="loginSection" class="login-wrap">
+        <h2 style="margin-top:0;">Inici de sessió</h2>
+        <div class="grid">
+          <div>
+            <label for="username">Usuari</label>
+            <input id="username" type="text" autocomplete="username" />
+          </div>
+          <div>
+            <label for="password">Contrasenya</label>
+            <input id="password" type="password" autocomplete="current-password" />
+          </div>
+          <button id="loginBtn" class="btn-primary">Entra a Admin</button>
+        </div>
+        <div id="loginStatus" class="status" aria-live="polite"></div>
+      </section>
+
+      <section id="adminSection" style="display:none;">
+        <div class="tabs">
+          <button id="tabData" class="tab-btn btn-primary">1) Panell de dades</button>
+          <button id="tabSecond" class="tab-btn btn-secondary">2) Reproductor de partida</button>
+        </div>
+
+        <article id="panelData" class="panel active option">
+          <h3 style="margin-top:0;">Vista general de taules</h3>
+          <p class="muted" style="margin-top:0;">Selecciona la taula, aplica filtres, carrega dades i exporta CSV.</p>
+
+          <div style="margin-bottom:8px;">
+            <label for="tableSelect">Taula</label>
+            <select id="tableSelect">
+              <option value="partida">Partida</option>
+              <option value="usuari">Usuari</option>
+            </select>
+          </div>
+
+          <div id="filtersPartida" class="toolbar"></div>
+          <div id="filtersUsuari" class="toolbar" style="display:none;"></div>
+
+          <div class="actions">
+            <button id="applyFiltersBtn" class="btn-primary">Aplica filtres</button>
+            <button id="clearFiltersBtn" class="btn-secondary">Neteja filtres</button>
+            <button id="downloadCsvBtn">Descarrega CSV</button>
+          </div>
+
+          <div id="dataStatus" class="status" aria-live="polite"></div>
+          <div class="table-wrap">
+            <table id="dataTable"></table>
+          </div>
+        </article>
+
+        <article id="panelSecond" class="panel option">
+          <h3 style="margin-top:0;">Visualització de partida</h3>
+          <p class="muted" style="margin-top:0;">Reproductor de partida per veure pas a pas què ha fet el jugador.</p>
+
+          <div class="actions" style="margin-top:8px;">
+            <input id="playbackPartidaId" type="number" min="1" placeholder="Introdueix id_partida" style="max-width:220px;" />
+            <button id="loadPlaybackBtn" class="btn-primary">Carrega partida</button>
+            <button id="prevStepBtn">Pas anterior</button>
+            <button id="nextStepBtn">Pas següent</button>
+            <button id="playPauseBtn" class="btn-secondary">Reprodueix</button>
+          </div>
+
+          <div id="playbackStatus" class="status" aria-live="polite"></div>
+
+          <div class="box playback-stage">
+            <h4>Punt de vista del jugador</h4>
+            <div class="snapshot-wrap">
+                  <iframe id="playbackGameFrame" class="replay-frame" src="/admin/replay" title="Replay del joc"></iframe>
+            </div>
+          </div>
+
+          <div class="playback-grid">
+            <div class="box">
+              <h4>Llista de passos</h4>
+              <div id="playbackStepList" class="step-list"></div>
+            </div>
+
+            <div style="display:grid; gap:10px;">
+              <div class="box">
+                <h4>Resum partida</h4>
+                <div id="playbackSummary" class="kvs"></div>
+              </div>
+
+              <div class="box">
+                <h4>Detall del pas actual</h4>
+                <div id="playbackStepDetails" class="kvs"></div>
+                <div id="playbackFigures" class="fig-grid"></div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="/admin/Admin.js"></script>
+</body>
+</html>

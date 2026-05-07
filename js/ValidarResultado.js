@@ -2,6 +2,9 @@ import { Container, Graphics, RenderTexture, Sprite, Text, TextStyle } from 'pix
 
 // Validation UI + pixel compare logic extracted from Figura
 export const ValidarResultado = {
+  // Default margin between bottom of selected figuras and the Validate button
+  validateButtonMarginPx: 15,
+
   async applyFinal(FiguraCls){
     const cls = FiguraCls;
     const app = cls.appRef;
@@ -59,6 +62,8 @@ export const ValidarResultado = {
           btn.zIndex = 10000;
           const w = 180, h = 50, r = 12;
           const bg = new Graphics();
+          // Add white stroke around the validate button
+          bg.lineStyle(3, 0xffffff, 1);
           bg.beginFill(0x2d7ef7);
           bg.drawRoundedRect(-w/2, -h/2, w, h, r);
           bg.endFill();
@@ -75,13 +80,36 @@ export const ValidarResultado = {
         }
         cls._validateButton.visible = true;
         cls._validateButton.x = Math.round(app.screen.width / 2);
-        // Place Validate button near bottom
-        cls._validateButton.y = Math.round(app.screen.height * 12 / 14);
+        // Position the button relative to selection with configured margin
+        ValidarResultado.positionValidateButton(cls);
       }catch(e){}
     }else{
       try{ if(cls._validateLabel) cls._validateLabel.visible = false; }catch(e){}
       try{ if(cls._validateButton) cls._validateButton.visible = false; }catch(e){}
     }
+  },
+
+  positionValidateButton(FiguraCls, marginPx){
+    const cls = FiguraCls; const app = cls?.appRef;
+    if(!app || !cls || !cls._validateButton) return;
+    const margin = Number.isFinite(marginPx) ? marginPx : (ValidarResultado.validateButtonMarginPx || 15);
+
+    // Compute the bottom of the center-area box where figuras are centered
+    const size = Math.floor(Math.min(app.screen.width, app.screen.height) * 0.32);
+    const centerY = Math.round(app.screen.height * 2 / 3);
+    const boxBottom = centerY + Math.round(size / 2);
+
+    // Determine button height from bounds (fallback to 50 if unavailable)
+    let btnH = 50;
+    try{
+      const b = cls._validateButton.getBounds();
+      if(b && typeof b.height === 'number' && b.height > 0){ btnH = Math.round(b.height); }
+    }catch(e){}
+
+    const targetCenterY = boxBottom + margin + Math.round(btnH / 2);
+    const maxY = Math.round(app.screen.height - 20);
+    const finalY = Math.min(maxY, targetCenterY);
+    cls._validateButton.y = finalY;
   },
 
   validateAgainstFinal(FiguraCls){
@@ -91,11 +119,11 @@ export const ValidarResultado = {
     const centered = cls.selectedStack.slice().sort((a,b)=> (a.zIndex||0)-(b.zIndex||0));
     const finals = cls._finalSprites.slice().sort((a,b)=> (a.zIndex||0)-(b.zIndex||0));
     if(centered.length === 0){
-      ValidarResultado.showValidateMessage(false, 'Todavía no has seleccionado ninguna figura', cls);
+      ValidarResultado.showValidateMessage(false, 'Encara no has seleccionat cap figura', cls);
       return;
     }
     if(finals.length === 0){
-      ValidarResultado.showValidateMessage(false, 'Estas figuras no coinciden', cls);
+      ValidarResultado.showValidateMessage(false, 'Aquestes figures no coincideixen', cls);
       return;
     }
 
@@ -205,7 +233,7 @@ export const ValidarResultado = {
     try{ app.renderer.roundPixels = prevRound; }catch(e){}
     // Only show failure message; success uses a separate victory popup
     if(!equal){
-      ValidarResultado.showValidateMessage(false, '¡Ups! Las piezas no encajan. ¡Intenta otra vez!', cls);
+      ValidarResultado.showValidateMessage(false, 'Ui! Les peces no encaixen. Intenta-ho una altra vegada!', cls);
     }
     try{ if(typeof cls.onValidation === 'function') cls.onValidation(equal); }catch(e){}
     rtA.destroy(true); rtB.destroy(true);
@@ -230,7 +258,7 @@ export const ValidarResultado = {
         return;
       }
       // Show error message positioned away from figura_final
-      cls._validateLabel.text = text || 'Estas figuras no coinciden';
+      cls._validateLabel.text = text || 'Aquestes figures no coincideixen';
       cls._validateLabel.style.fill = 0xe74c3c;
       cls._validateLabel.x = Math.round(app.screen.width / 2);
       cls._validateLabel.y = Math.round(app.screen.height * 0.12);
