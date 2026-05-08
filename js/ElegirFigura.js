@@ -101,6 +101,8 @@ export const ElegirFigura = {
     const h = cls.selectionCell.height;
     const gap = cls.selectionCell.gap;
     const leftThirdWidth = Math.floor(app.screen.width / 3);
+    const rowHeight = Math.max(1, Math.round((app.screen.height - 48) / 6));
+    const rowBlock = rowHeight;
 
     const sampleStyle = new TextStyle({
       fontFamily: 'Arial',
@@ -120,9 +122,8 @@ export const ElegirFigura = {
     const labelHeight = 0; // No longer need height since labels are on the side
     const labelMargin = 0; // No longer need margin
 
-    const rowBlock = h; // Just the cell height, no label above
-    const totalHeight = rows * rowBlock + (rows - 1) * gap;
-    const startY = Math.round(app.screen.height / 2 - totalHeight / 2);
+    const totalHeight = rows * rowBlock;
+    const startY = Math.round(app.screen.height * 0.10);
 
     const totalGridWidth = cols * w + (cols - 1) * gap;
     const left = Math.max(0, Math.round((leftThirdWidth - totalGridWidth) / 2) + (cls.selectionCell.leftOffset || 0));
@@ -150,7 +151,7 @@ export const ElegirFigura = {
       const row = (n - 1) - Math.floor(i / cols); // Reverse order: bottom to top
       const col = i % cols;
       const x = left + col * (w + gap);
-      const y = startY + row * (rowBlock + gap);
+      const y = startY + row * rowBlock;
 
       const occupied = i < cls.selectedStack.length;
       const borderColor = 0x999999;

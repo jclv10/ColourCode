@@ -447,11 +447,12 @@ class Figura extends Sprite {
                 const w = cls.selectionCell.width;
                 const h = cls.selectionCell.height;
                 const gap = cls.selectionCell.gap;
+                const rowHeight = Math.max(1, Math.round((app.screen.height - 48) / 6));
                 
-                const rowBlock = h;
+                const rowBlock = rowHeight;
                 const rows = Math.ceil(n / cols);
-                const totalHeight = rows * rowBlock + (rows - 1) * gap;
-                const startY = Math.round(app.screen.height / 2 - totalHeight / 2);
+                const totalHeight = rows * rowBlock;
+                const startY = Math.round(app.screen.height * 0.10);
                 
                 const totalGridWidth = cols * w + (cols - 1) * gap;
                 const left = Math.max(0, Math.round((leftThirdWidth - totalGridWidth) / 2) + (cls.selectionCell.leftOffset || 0));
@@ -463,7 +464,7 @@ class Figura extends Sprite {
                     const row = (n - 1) - Math.floor(i / cols); // Reverse order
                     const col = i % cols;
                     const cellX = left + col * (w + gap);
-                    const cellY = startY + row * (rowBlock + gap);
+                    const cellY = startY + row * rowBlock;
                     
                     // Check if drop position is within this cell
                     if (Math.abs(this.x - (cellX + w / 2)) < w / 2 + tolerance &&

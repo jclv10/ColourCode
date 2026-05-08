@@ -112,9 +112,8 @@ const addTimer = (app, scaleFactor, withTicker = true) => {
   });
   const t = new Text('⌛ 00 : 00', style);
   t.anchor.set(0.5);
-  const leftThirdW = Math.floor(app.screen.width / 3);
-  t.x = Math.floor(leftThirdW / 2);
-  t.y = Math.floor(app.screen.height / 10);
+  t.x = Math.floor(app.screen.width * 0.9);
+  t.y = Math.floor(app.screen.height * 0.065);
   levelUiContainer.addChild(t);
   timerText = t;
   if(withTicker){
@@ -136,10 +135,11 @@ const addResetSelectedButton = async (app) => {
     const cols = cellCfg.cols || 1;
     const cellW = cellCfg.width || 100;
     const cellGap = cellCfg.gap || 20;
+    const rowHeight = Math.max(1, Math.round((app.screen.height - 48) / 6));
     const totalGridWidth = cols * cellW + (cols - 1) * cellGap;
     const stackLeft = Math.max(0, Math.round((leftThirdW - totalGridWidth) / 2) + (cellCfg.leftOffset || 0));
     spr.x = Math.round(stackLeft + totalGridWidth / 2);
-    spr.y = Math.round(app.screen.height * 7 / 8);
+    spr.y = Math.round(app.screen.height * 0.10 + rowHeight * 5 + app.screen.height * 0.02);
     const s = Math.max(0.6, Math.min(1.2, app.screen.height / baseHeight));
     spr.scale.set(s);
     spr.eventMode = 'static';
